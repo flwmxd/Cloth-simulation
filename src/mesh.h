@@ -24,7 +24,7 @@ public:
     void addKnot(Knot *);
     void createKnots();
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);
-    void init();
+    void init(glm::vec3);
     unsigned int getType() { return MESH_SHAPE; };
     glm::vec3 getPosition() { return position; };
 

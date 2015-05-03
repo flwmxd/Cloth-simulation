@@ -14,13 +14,14 @@
 
 class Scene {
 public:
-    Scene() { };
+    Scene();
     //~Scene();
 
     void init();
     void draw(glm::mat4, glm::mat4, glm::mat4);
     void checkCollisions();
     void addBody(Body *);
+    glm::vec3 getLightPosition() { return this->lightPosition; };
 
 
 private:

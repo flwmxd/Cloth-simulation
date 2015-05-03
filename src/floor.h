@@ -15,31 +15,41 @@ class Floor : public Shape {
 public:
     // Constructors
     Floor(glm::vec3, float, const std::string&);
+    // Add constructor with custom material
 
     // Member functions
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);
-    void init();
+    void init(glm::vec3);
     unsigned int getType() { return FLOOR_SHAPE; };
+    void createVertices();
+    void createFaceNormals();
+    void createVertexNormals();
+    void createUVs();
 
 private:
     glm::vec3 position;
     float size;
 
+    std::vector<glm::vec3> mVertices;
+    std::vector<glm::vec3> mFaceNormals;
+    std::vector<glm::vec3> mVertexNormals;
+    std::vector<glm::vec2> mUvs;
+
     std::string textureName;
     GLuint vertexArray;
     GLuint vertexPositionBuffer;
+    GLuint normalCoordBuffer;
     GLuint texCoordBuffer;
 
     // Shader data
     GLint MVPLoc;
-    GLint MVP_Loc;
-    GLint MV_Loc;
-    GLint MVLight_Loc;
-    GLint NM_Loc;
-    GLint lightPos_Loc;
-    GLint lightAmb_Loc;
-    GLint lightDif_Loc;
-    GLint lightSpe_Loc;
+    GLint MVLoc;
+    GLint MVLightLoc;
+    GLint NMLoc;
+    GLint lightPosLoc;
+    GLint lightAmbLoc;
+    GLint lightDifLoc;
+    GLint lightSpeLoc;
 
     // Material data
     glm::vec4 ambient;
@@ -47,9 +57,6 @@ private:
     glm::vec4 specular;
 
     size_t texHandle;
-
-    unsigned int mNumberOfVerts;
-
 };
 
 #endif // FLOOR_H

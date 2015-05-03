@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
     gEngine = new sgct::Engine(argc, argv);
     scene = new Scene();
-
+    std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
     gEngine->setInitOGLFunction(init);
     gEngine->setDrawFunction(draw);
     gEngine->setPreSyncFunction(preSync);
@@ -64,14 +64,15 @@ int main(int argc, char* argv[]) {
 void init() {
 
     // Create our cloth mesh
-    Body * cloth = new Body(new Mesh(5, 0.5f, glm::vec3(0.0f, 2.0f, -3.0f)));
+    Body * cloth = new Body(new Mesh(5, 0.5f, glm::vec3(0.0f, 0.0f, 0.0f)));
     scene->addBody(cloth);
 
     // Create a floor for some orientation help
     Body * floor = new Body(new Floor(glm::vec3(0.0f, 0.0f, 0.0f), 10.0f, "checker"));
     scene->addBody(floor);
-
+    std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
     scene->init();
+    std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
 }
 
 
@@ -85,6 +86,7 @@ void preSync() {
     if(gEngine->isMaster()) {
         curr_time.setVal(sgct::Engine::getTime());
 
+        // Camera movement
         if( mouseLeftButton ) {
             double tmpYPos;
             //get the mouse pos from first window

@@ -28,7 +28,7 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
     // TODO
 }
 
-void Mesh::init() {
+void Mesh::init(glm::vec3 lightPos) {
     // TODO
     std::cout << "INIT MESH!!!" << std::endl;
 }
