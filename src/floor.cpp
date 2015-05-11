@@ -1,7 +1,9 @@
 #include "floor.h"
 
-Floor::Floor(glm::vec3 p, float s, const std::string& t) 
-    : position(p), size(s), textureName(t) {
+Floor::Floor(glm::vec3 p, float s, const std::string& t, bool is) 
+    : position(p), size(s), textureName(t), _isStatic(is) {
+
+    velocity = glm::vec3(0.0f);
 
     Floor::createVertices();
     Floor::createFaceNormals();
@@ -9,13 +11,13 @@ Floor::Floor(glm::vec3 p, float s, const std::string& t)
     Floor::createUVs();
 
     // Set some standard material properties
-    ambient = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+    ambient = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
     diffuse = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
     specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 
-void Floor::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM) {
+void Floor::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM, unsigned int drawType) {
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureByHandle(texHandle));
@@ -41,7 +43,7 @@ void Floor::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& 
 void Floor::init(glm::vec3 lightPos) {
 
     std::cout << "Initializing floor..." << std::endl;
-    std::cout << "lightpos: (" << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << ")" << std::endl;
+    //std::cout << "lightpos: (" << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << ")" << std::endl;
 
     // Load texture
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
@@ -50,8 +52,8 @@ void Floor::init(glm::vec3 lightPos) {
 
     // Setup shaders
     sgct::ShaderManager::instance()->addShaderProgram( "floor",
-            "shaders/barebone.vert",
-            "shaders/barebone.frag" );
+            "shaders/floorphong.vert",
+            "shaders/floorphong.frag" );
 
     // Bind shaders
     sgct::ShaderManager::instance()->bindShaderProgram( "floor" );
@@ -66,8 +68,8 @@ void Floor::init(glm::vec3 lightPos) {
     lightDifLoc     = sgct::ShaderManager::instance()->getShaderProgram("floor").getUniformLocation( "lightDiffuse" );
     lightSpeLoc     = sgct::ShaderManager::instance()->getShaderProgram("floor").getUniformLocation( "lightSpecular" );
 
-    std::cout << "shaders/barebone.vert loaded" << std::endl;
-    std::cout << "shaders/barebone.frag loaded" << std::endl;
+    std::cout << "shaders/floorphong.vert loaded" << std::endl;
+    std::cout << "shaders/floorphong.frag loaded" << std::endl;
 
     // Setup uniforms for shaders
     glUniform1i(TexLoc, 0);
@@ -78,27 +80,6 @@ void Floor::init(glm::vec3 lightPos) {
 
     // Unbind the shaders
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
-    // Generate vertecies for floor
-    /*const GLfloat vertecies[] = {
-        -1.0f * size, 0.0f, -1.0f * size,
-        -1.0f * size, 0.0f,  1.0f * size,
-         1.0f * size, 0.0f,  1.0f * size,
-        -1.0f * size, 0.0f, -1.0f * size,
-         1.0f * size, 0.0f,  1.0f * size,
-         1.0f * size, 0.0f, -1.0f * size
-    };*/
-
-    //mNumberOfVerts = sizeof(vertecies);
-
-    /*const GLfloat uvs[] = {
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        0.0f, 0.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f
-    };*/
 
     // Generate VAO
     glGenVertexArrays(1, &vertexArray);
@@ -196,4 +177,13 @@ void Floor::createUVs() {
     mUvs.push_back(glm::vec2(0.0f, 0.0f));
     mUvs.push_back(glm::vec2(1.0f, 1.0f));
     mUvs.push_back(glm::vec2(1.0f, 0.0f));
+}
+
+void Floor::integrateVelocity(float dt) {
+
+    position += velocity * dt;
+}
+
+void Floor::applyG(const float G, float dt) {
+    velocity += glm::vec3(0.0f, G, 0.0f) * dt;
 }

@@ -14,22 +14,31 @@ class Floor : public Shape {
 
 public:
     // Constructors
-    Floor(glm::vec3, float, const std::string&);
+    Floor(glm::vec3, float, const std::string&, bool is = true);
     // Add constructor with custom material
 
     // Member functions
-    void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);
+    void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int);
     void init(glm::vec3);
-    unsigned int getType() { return FLOOR_SHAPE; };
     void createVertices();
     void createFaceNormals();
     void createVertexNormals();
     void createUVs();
 
+    void integrateVelocity(float);
+    void applyG(const float, float);
+
+    unsigned int getType() { return FLOOR_SHAPE; };
+    glm::vec3 getPosition() { return this->position; };
+    void setBodyStatic(int index) { _isStatic = true; };
+
 private:
     glm::vec3 position;
+    glm::vec3 velocity;
     float size;
+    bool _isStatic;
 
+    // Data for OpenGL
     std::vector<glm::vec3> mVertices;
     std::vector<glm::vec3> mFaceNormals;
     std::vector<glm::vec3> mVertexNormals;

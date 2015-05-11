@@ -13,9 +13,13 @@ class Body;
 class Shape {
 
 public:
-    virtual void draw(glm::mat4&, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM) = 0;
+    virtual void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int) = 0;
     virtual unsigned int getType() = 0;
     virtual void init(glm::vec3) = 0;
+    virtual glm::vec3 getPosition() = 0;
+    virtual void integrateVelocity(float) = 0;
+    virtual void applyG(const float, float) = 0;
+    virtual void setBodyStatic(int) = 0;
 
     Body * body;
 

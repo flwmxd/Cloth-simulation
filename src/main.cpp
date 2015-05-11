@@ -10,6 +10,7 @@ void preSync();
 void encode();
 void decode();
 void cleanUp();
+void keyCallback(int key, int action);
 void mouseButtonCallback(int button, int action);
 
 // Declare an engine object for sgct
@@ -17,18 +18,19 @@ sgct::Engine * gEngine;
 // Declare a scene for our simulation
 Scene * scene;
 
-// Bool to check if the left mouse button is pressed
+// Mouse stuff
 bool mouseLeftButton = false;
-
 double mouseDx = 0.0;
-
 double mouseXPos[] = { 0.0, 0.0 };
+
+// Toggle draw functions
+unsigned int drawType = 0;
 
 glm::vec3 view(0.0f, 0.0f, 1.0f);
 
 sgct::SharedObject<glm::mat4> cameraRot;
 
-float rotationSpeed = 0.1f;
+float rotationSpeed = 0.2f;
 
 // If time is required
 sgct::SharedDouble curr_time(0.0);
@@ -37,13 +39,18 @@ sgct::SharedDouble curr_time(0.0);
 int main(int argc, char* argv[]) {
 
     gEngine = new sgct::Engine(argc, argv);
+    
     scene = new Scene();
-    std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
+
+    scene->setTime(0.0f);
+    scene->setDt(1.0f/60.0f);
+
     gEngine->setInitOGLFunction(init);
     gEngine->setDrawFunction(draw);
     gEngine->setPreSyncFunction(preSync);
     gEngine->setCleanUpFunction(cleanUp);
-    gEngine->setMouseButtonCallbackFunction( mouseButtonCallback );
+    gEngine->setKeyboardCallbackFunction(keyCallback);
+    gEngine->setMouseButtonCallbackFunction(mouseButtonCallback);
     sgct::SharedData::instance()->setEncodeFunction(encode);
     sgct::SharedData::instance()->setDecodeFunction(decode);
 
@@ -64,21 +71,23 @@ int main(int argc, char* argv[]) {
 void init() {
 
     // Create our cloth mesh
-    Body * cloth = new Body(new Mesh(5, 0.5f, glm::vec3(0.0f, 0.0f, 0.0f)));
+    Body * cloth = new Body(new Mesh(5, 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)));
+    cloth->getShape()->setBodyStatic(20);
+    cloth->getShape()->setBodyStatic(24);
     scene->addBody(cloth);
 
     // Create a floor for some orientation help
-    Body * floor = new Body(new Floor(glm::vec3(0.0f, 0.0f, 0.0f), 10.0f, "checker"));
+    Body * floor = new Body(new Floor(glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, "checker"));
     scene->addBody(floor);
-    std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
+    //std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
     scene->init();
-    std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
+    //std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
 }
 
 
 void draw() {
-
-    scene->draw(gEngine->getActiveModelViewProjectionMatrix(), gEngine->getActiveModelViewMatrix(), cameraRot.getVal());
+    scene->step();
+    scene->draw(gEngine->getActiveModelViewProjectionMatrix(), gEngine->getActiveModelViewMatrix(), cameraRot.getVal(), drawType);
 }
 
 
@@ -125,6 +134,21 @@ void encode() {
 void decode() {
     sgct::SharedData::instance()->readDouble(&curr_time);
     sgct::SharedData::instance()->readObj(&cameraRot);
+}
+
+
+void keyCallback(int key, int action)
+{
+    if( gEngine->isMaster() )
+    {
+        switch( key )
+        {
+        case SGCT_KEY_K:
+            if(action == SGCT_PRESS)
+                drawType = (drawType == 0) ? 1 : 0;
+            break;
+        }
+    }
 }
 
 

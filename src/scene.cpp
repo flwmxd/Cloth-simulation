@@ -22,30 +22,32 @@ void Scene::init() {
 }
 
 
-void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 cameraRotation) {
+void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 cameraRotation, unsigned int drawType) {
 
     // Set up backface culling, depth test and some blending if alpha channel is used
     glEnable( GL_CULL_FACE );
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 
-    // Set background color of the scene, just some boring grey is enough
+    // Set background color of the scene, just some boring grey is enough for now
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
-    // Clear the color buffer from the grey we used for the bg
+    // Clear the color buffer from the grey we used for the background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Translate the scene
     glm::mat4 scene_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.0f, -15.0f));
     scene_mat = glm::rotate( scene_mat, 20.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
+    // Create some matrices needed for our shapes draw functions
     glm::mat4 MVP       = activeMVPMatrix * scene_mat * cameraRotation;
     glm::mat4 MV        = activeMVMatrix * scene_mat;
     glm::mat4 MV_light  = activeMVMatrix;
     glm::mat3 NM        = glm::inverseTranspose(glm::mat3(MV));
 
+    // Draw all the shapes
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it)
-        (*it)->getShape()->draw(MVP, MV, MV_light, NM);
+        (*it)->getShape()->draw(MVP, MV, MV_light, NM, drawType);
 
     glDisable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
@@ -54,5 +56,29 @@ void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 
 
 
 void Scene::checkCollisions() {
-    std::cout << "check scene collisions" << std::endl;
+    //std::cout << "check scene collisions" << std::endl;
 }
+
+
+void Scene::step() {
+    checkCollisions();
+    applyG();
+    integrateVelocities();
+}
+
+
+void Scene::integrateVelocities() {
+
+    for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+        // Some euler stuff
+        (*it)->getShape()->integrateVelocity(dt);
+    }
+}
+
+void Scene::applyG() {
+
+    for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+        (*it)->getShape()->applyG(GRAVITY, dt);
+    }
+}
+
