@@ -19,6 +19,7 @@ public:
     virtual glm::vec3 getPosition() = 0;
     virtual void integrateVelocity(float) = 0;
     virtual void applyG(const float, float) = 0;
+    virtual void applySpringForce(const float, float) = 0;
     virtual void setBodyStatic(int) = 0;
 
     Body * body;

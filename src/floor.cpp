@@ -179,11 +179,17 @@ void Floor::createUVs() {
     mUvs.push_back(glm::vec2(1.0f, 0.0f));
 }
 
+
 void Floor::integrateVelocity(float dt) {
 
     position += velocity * dt;
 }
 
+
 void Floor::applyG(const float G, float dt) {
     velocity += glm::vec3(0.0f, G, 0.0f) * dt;
+}
+
+
+void  Floor::applySpringForce(const float G, float dt) {
 }

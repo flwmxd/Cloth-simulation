@@ -27,6 +27,7 @@ public:
 
     void integrateVelocity(float);
     void applyG(const float, float);
+    void applySpringForce(const float, float);
 
     unsigned int getType() { return FLOOR_SHAPE; };
     glm::vec3 getPosition() { return this->position; };

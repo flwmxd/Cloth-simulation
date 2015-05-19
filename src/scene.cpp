@@ -62,8 +62,17 @@ void Scene::checkCollisions() {
 
 void Scene::step() {
     checkCollisions();
+    applySpringForce();
     applyG();
     integrateVelocities();
+}
+
+
+void Scene::applySpringForce() {
+
+    for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+        (*it)->getShape()->applySpringForce(GRAVITY, dt);
+    }
 }
 
 

@@ -77,8 +77,8 @@ void init() {
     scene->addBody(cloth);
 
     // Create a floor for some orientation help
-    Body * floor = new Body(new Floor(glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, "checker"));
-    scene->addBody(floor);
+    //Body * floor = new Body(new Floor(glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, "checker"));
+    //scene->addBody(floor);
     //std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
     scene->init();
     //std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;

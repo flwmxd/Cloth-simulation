@@ -1,7 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#define GRAVITY -9.82
+#define GRAVITY -0.001
 
 #include <vector>
 #include <iostream>
@@ -25,6 +25,7 @@ public:
     void checkCollisions();
 
     void step();
+    void applySpringForce();
     void integrateVelocities();
     void applyG();
 

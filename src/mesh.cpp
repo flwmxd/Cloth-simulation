@@ -37,38 +37,64 @@ void Mesh::createKnotNeighbors() {
         
         // Add knot to the right
         if((index + 1)%numKnots != 0 || index == 0)
-            (*it)->addNeighbor(*(it + 1));
+            (*it)->addAdjNeighbor(*(it + 1));
 
         // Add knot to the left
-        if((index)%numKnots != 0)
-            (*it)->addNeighbor(*(it - 1));
+        if((index)%numKnots != 0) {
+            (*it)->addAdjNeighbor(*(it - 1));
+            //std::cout << index << "\t";
+        }
 
         // Add knot above
         if((index < knots.size() - numKnots))
-            (*it)->addNeighbor(*(it + numKnots));
+            (*it)->addAdjNeighbor(*(it + numKnots));
 
         // Add knot bellow
         if((index > numKnots - 1))
-            (*it)->addNeighbor(*(it - numKnots));
+            (*it)->addAdjNeighbor(*(it - numKnots));
 
         // Add knot upper right
         if((index < knots.size() - numKnots - 1) && (index + 1)%numKnots != 0)
-            (*it)->addNeighbor(*(it + numKnots + 1));
+            (*it)->addDiagNeighbor(*(it + numKnots + 1));
 
         // Add knot lower left
         if((index > numKnots) && (index)%numKnots != 0)
-            (*it)->addNeighbor(*(it - numKnots - 1));
+            (*it)->addDiagNeighbor(*(it - numKnots - 1));
 
         // Add knot lower right
         if((index > numKnots - 1) && (index + 1)%numKnots != 0)
-            (*it)->addNeighbor(*(it - numKnots + 1));
+            (*it)->addDiagNeighbor(*(it - numKnots + 1));
 
         // Add knot upper left
         if((index < knots.size() - numKnots) && (index)%numKnots != 0)
-            (*it)->addNeighbor(*(it + numKnots - 1));
+            (*it)->addDiagNeighbor(*(it + numKnots - 1));
+
+        // Add knot 2 steps right
+        if(((index + 2)%numKnots != 0 && (index + 1)%numKnots != 0) || index == 0) {
+            (*it)->addFlexNeighbor(*(it + 2));
+            //std::cout << index << "\t";
+            //(*(it+2))->debugKnotPosition();
+        }
+
+        // Add knot 2 steps left
+        if((index - 1)%numKnots != 0 && index%numKnots != 0) {
+            std::cout << index << "\t";
+        }
 
         index++;
     }
+
+
+    // NEIGHBOR DEBUGGING
+    /*for(int i = 0; i < knots.size(); i++) {
+        std::vector<Knot *> n = knots[i]->getAdjNeighbors();
+        std::cout << "KNOT POS: (" << knots[i]->getPosition().x << ", " << knots[i]->getPosition().y << ", " << knots[i]->getPosition().z << ")" << std::endl;
+        for(std::vector<Knot *>::iterator it = n.begin(); it != n.end(); ++it) {
+            std::cout << "neighbor pos: (" << (*it)->getPosition().x << ", " << (*it)->getPosition().y << ", " << (*it)->getPosition().z << ") \t";
+        }
+        std::cout << std::endl << std::endl;
+    }*/
+
 }
 
 
@@ -111,6 +137,8 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
 
 void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM) {
     // TODO
+    // ADD VERTEX UPDATE FOR THE SURFACE
+
     sgct::ShaderManager::instance()->bindShaderProgram("mesh");
 
     glUniformMatrix4fv(MVPLoc, 1, GL_FALSE, &MVP[0][0]);
@@ -233,7 +261,18 @@ void Mesh::initSurface(glm::vec3 lightPos) {
     // Unbind buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
 
+
+void Mesh::applySpringForce(const float G, float dt) {
+
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
+        (*it)->applySpringForce();
+    }
+
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
+        (*it)->integrateForce(dt);
+    }
 }
 
 

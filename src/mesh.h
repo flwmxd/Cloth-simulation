@@ -41,6 +41,7 @@ public:
     void initSurface(glm::vec3);
     void initKnotDrawing(glm::vec3);
 
+    void applySpringForce(const float, float);
     void integrateVelocity(float);
     void applyG(const float, float);
 
