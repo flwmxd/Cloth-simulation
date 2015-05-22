@@ -27,6 +27,7 @@ public:
     void createFaceNormals();
     void createVertexNormals();
     void createUVs();
+    void setup1();
 
     void integrateVelocity(const glm::vec3, float);
     void applyG(const glm::vec3, float);
@@ -39,6 +40,7 @@ public:
     // Setters
     void setBodyStatic(int index) { _isStatic = true; };
     void setWindForce(glm::vec3 w_f) {};
+    void setPosition(glm::vec3 p) { position = p; };
 
 private:
     glm::vec3 position;

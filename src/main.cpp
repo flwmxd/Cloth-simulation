@@ -3,6 +3,7 @@
 #include "scene.h"
 #include "mesh.h"
 #include "floor.h"
+#include "sphere.h"
 
 void init();
 void draw();
@@ -17,6 +18,11 @@ void mouseButtonCallback(int button, int action);
 sgct::Engine * gEngine;
 // Declare a scene for our simulation
 Scene * scene;
+
+// Some bodies for the scene
+Body * cloth;
+Body * sphere;
+Body * floor_;
 
 // Mouse stuff
 bool mouseLeftButton = false;
@@ -42,9 +48,7 @@ int main(int argc, char* argv[]) {
     
     scene = new Scene();
 
-    //scene->setTime(0.0f);
     scene->setAcceleration(glm::vec3(0.0f, -1.0f, 0.0f) * 9.82f);
-    //scene->setDt(1.0f/60.0f);
 
     gEngine->setInitOGLFunction(init);
     gEngine->setDrawFunction(draw);
@@ -72,21 +76,22 @@ int main(int argc, char* argv[]) {
 void init() {
 
     // Create our cloth mesh
-    Body * cloth = new Body(new Mesh(7, 1.0f, glm::vec3(0.0f, 2.0f, 0.0f)));
+    cloth = new Body(new Mesh(7, 1.0f, glm::vec3(0.0f, 2.0f, 0.0f)));
+    //cloth->setup1();
     cloth->getShape()->setBodyStatic(42);
-    //cloth->getShape()->setBodyStatic(21);
-    //cloth->getShape()->setBodyStatic(22);
-    //cloth->getShape()->setBodyStatic(23);
     cloth->getShape()->setBodyStatic(48);
-    //cloth->getShape()->setWindForce(glm::vec3(sin(static_cast<float>(curr_time.getVal() * 5.0)), 0.0f, 0.0f));
     scene->addBody(cloth);
 
+
+    sphere = new Body(new Sphere(2.0f, glm::vec3(0.0f, 0.0f, 3.0f)));
+    scene->addBody(sphere);
+
     // Create a floor for some orientation help
-    Body * floor = new Body(new Floor(glm::vec3(0.0f, -3.0f, 0.0f), 30.0f, "checker"));
-    scene->addBody(floor);
-    //std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
+    floor_ = new Body(new Floor(glm::vec3(0.0f, -3.0f, 0.0f), 30.0f, "checker"));
+    scene->addBody(floor_);
+    
     scene->init();
-    //std::cout << "lightpos: (" << scene->getLightPosition().x << ", " << scene->getLightPosition().y << ", " << scene->getLightPosition().z << ")" << std::endl;
+    
 }
 
 
@@ -94,8 +99,6 @@ void draw() {
     scene->setTime(static_cast<float>(curr_time.getVal()));
     scene->setDt(gEngine->getDt());
     scene->step();
-    //std::cout << "SGCT dt: " << gEngine->getDt() << std::endl;
-    //std::cout << "this dt: " << 1.0f/60.0f << std::endl;
     scene->draw(gEngine->getActiveModelViewProjectionMatrix(), gEngine->getActiveModelViewMatrix(), cameraRot.getVal(), drawType);
 }
 
@@ -162,6 +165,35 @@ void keyCallback(int key, int action)
         case SGCT_KEY_R:
             if(action == SGCT_PRESS)
                 scene->reset();
+            break;
+
+        case SGCT_KEY_W:
+            sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(0.0f, 0.0f, -0.2f));
+            break;
+
+        case SGCT_KEY_S:
+            sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(0.0f, 0.0f, 0.2f));
+            break;
+
+        case SGCT_KEY_A:
+            sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(-0.2f, 0.0f, 0.0f));
+            break;
+
+        case SGCT_KEY_D:
+            sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(0.2f, 0.0f, 0.0f));
+            break;
+
+        case SGCT_KEY_Q:
+            sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(0.0f, -0.2f, 0.0f));
+            break;
+
+        case SGCT_KEY_E:
+            sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(0.0f, 0.2f, 0.0f));
+            break;
+
+        case SGCT_KEY_1:
+            if(action == SGCT_PRESS)
+                cloth->getShape()->setup1();
             break;
         }
     }

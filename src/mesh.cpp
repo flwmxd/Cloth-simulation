@@ -338,6 +338,34 @@ void Mesh::setWindForce(glm::vec3 w_f) {
 }
 
 
+void Mesh::setup1() {
+    
+    // reset the mesh, i.e. positions, velocities and forces. 
+    reset();
+
+    unsigned int indx = 0;
+
+    glm::vec3 init_pos = knots.front()->getInitialPosition();
+    float x = init_pos.x;
+    float y = init_pos.y;
+    float z = init_pos.z;
+
+    // Give all knots new positions
+    for(std::vector<Knot* >::iterator it = knots.begin(); it != knots.end(); ++it) {
+        
+        (*it)->setPosition(glm::vec3(x, y, z));
+
+        x += knotSpacing*3.0f;
+
+        if((indx+1)%(numKnots) == 0 && indx > 0) {
+            y += knotSpacing*3.0f;
+            x = init_pos.x;
+        }
+        indx++;
+    }
+}
+
+
 void Mesh::debugColor() {
 
 }

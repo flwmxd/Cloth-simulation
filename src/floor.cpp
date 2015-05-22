@@ -198,3 +198,8 @@ void Floor::applyG(const glm::vec3 G, float dt) {
 
 void  Floor::applySpringForce(float t, float dt) {
 }
+
+
+void Floor::setup1() {
+    
+}

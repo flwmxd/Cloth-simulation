@@ -44,6 +44,7 @@ public:
 
     // Getters
     glm::vec3 getPosition() { return this->position; }
+    glm::vec3 getInitialPosition() { return this->initial_position; }
     glm::vec3 getVelocity() { return this->velocity; }
     glm::vec3 getForce() { return this->force; }
     int getMass() { return _MASS; }    // MAKE THIS MORE PHYSICALY ACCURATE BY USING POLYGON AREA DIVIDED BY 3
@@ -54,6 +55,7 @@ public:
 
     // Setters
     void setStatic() { _isStatic = true; };
+    void setPosition(glm::vec3 p) { this->position = p; };
     void setForce(glm::vec3 f) { this->force = f; };
     void setWindForce(glm::vec3 w_f) { this->wind = w_f; };
     void addForce(glm::vec3 f) { this->force += f; };

@@ -23,6 +23,8 @@ public:
     virtual void applySpringForce(float, float) = 0;
     virtual void setBodyStatic(int) = 0;
     virtual void setWindForce(glm::vec3) = 0;
+    virtual void setPosition(glm::vec3) = 0;
+    virtual void setup1() = 0;
 
     Body * body;
 

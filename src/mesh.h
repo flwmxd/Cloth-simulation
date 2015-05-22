@@ -33,6 +33,8 @@ public:
     void createVertices();
     void createColorVector(glm::vec3);
 
+    void setup1();
+
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int);
     void drawSurface(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);
     void drawKnots(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);
@@ -54,6 +56,7 @@ public:
     // Setters
     void setBodyStatic(int);
     void setWindForce(glm::vec3);
+    void setPosition(glm::vec3 p) { position = p; };
 
     // Debug functions
     void debugMesh();
