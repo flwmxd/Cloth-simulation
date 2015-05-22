@@ -1,98 +1,37 @@
 #ifndef KNOT_H
 #define KNOT_H
 
-#define _MASS 10.0
-#define INIT_SPRING 0.5
-#define DIAG_SPRING 0.71
-#define SPRING_CONSTANT 5.0
-#define DAMPING 20.0
+#define _MASS 1.0f
+#define SPRING_CONSTANT 0.00001f
+#define DAMPING 1.0f
 
 #include <glm/glm.hpp>
+#include <vector>
+#include <iostream>
 
 class Knot {
 
 public:
     // Constructors
-    Knot(glm::vec3 p, bool is = false)
-        : position(p), _isStatic(is) {
-
-            velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-            force = glm::vec3(0.0f, 0.0f, 0.0f);
-        };
+    Knot(glm::vec3, bool is = false);
 
     // Member functions
-    void integrateVelocity(float dt) {
-        if(!_isStatic)
-            position += velocity * dt;
-    };
+    void reset();
 
+    void integrateVelocity(const glm::vec3, float);
 
-    void applyG(const float G, float dt) {
-        if(!_isStatic)
-            velocity += glm::vec3(0.0f, G, 0.0f) * dt;
-    };
+    void applyG(const glm::vec3, float);
 
-
-    void applySpringForce() {
-
-        //if(!_isStatic) {
-
-            //glm::vec3 f_int(0.0f, 0.0f, 0.0f);
-            glm::vec3 delta_p;
-            glm::vec3 delta_p_hat;
-            glm::vec3 delta_v;
-            glm::vec3 f;
-
-            float k = SPRING_CONSTANT;
-            float l = INIT_SPRING;
-            float b = DAMPING;
-            float spring_elongation;
-
-            for(std::vector<Knot *>::iterator it = adjNeighbors.begin(); it != adjNeighbors.end(); ++it) {
-
-                delta_v = this->velocity - (*it)->getVelocity();
-                delta_p = this->position - (*it)->getPosition();
-                delta_p_hat = glm::normalize(delta_p);
-
-                spring_elongation = glm::length(delta_p) - l;
-
-                f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
-
-                (*it)->addForce(-f);
-                this->force += f;
-            }
-
-            l = DIAG_SPRING;
-
-            for(std::vector<Knot *>::iterator it = diagNeighbors.begin(); it != diagNeighbors.end(); ++it) {
-                //neighborStretch += SPRING_CONSTANT * (glm::length(position - (*it)->getPosition()) - DIAG_SPRING);
-                delta_v = this->velocity - (*it)->getVelocity();
-                delta_p = this->position - (*it)->getPosition();
-                delta_p_hat = glm::normalize(delta_p);
-
-                spring_elongation = glm::length(delta_p) - l;
-
-                f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
-
-                (*it)->addForce(-f);
-                this->force += f;
-            }
-
-           // std::cout << std::endl << std::endl;
-        //}
-    }
-
+    void applySpringForce(float);
 
     void integrateForce(const float dt) {
-
         this->velocity += (this->force / (float)_MASS) * dt;
+        this->force *= 0.95f;
     }
-
 
     void addAdjNeighbor(Knot *k) {
         adjNeighbors.push_back(k);
     }
-
 
     void addDiagNeighbor(Knot *k) {
         diagNeighbors.push_back(k);
@@ -102,6 +41,7 @@ public:
         flexNeighbors.push_back(k);
     }
 
+
     // Getters
     glm::vec3 getPosition() { return this->position; }
     glm::vec3 getVelocity() { return this->velocity; }
@@ -110,10 +50,12 @@ public:
     std::vector<Knot *> getAdjNeighbors() { return this->adjNeighbors;  }
     std::vector<Knot *> getDiagNeighbors() { return this->diagNeighbors;  }
     std::vector<Knot *> getFlexNeighbors() { return this->flexNeighbors;  }
+    bool isStatic() { return _isStatic; }
 
     // Setters
     void setStatic() { _isStatic = true; };
     void setForce(glm::vec3 f) { this->force = f; };
+    void setWindForce(glm::vec3 w_f) { this->wind = w_f; };
     void addForce(glm::vec3 f) { this->force += f; };
 
     void debugKnotPosition() {
@@ -122,12 +64,57 @@ public:
 
 private:
     glm::vec3 position;
+    glm::vec3 initial_position;
     glm::vec3 velocity;
     glm::vec3 force;
+    glm::vec3 wind;
     bool _isStatic;
     std::vector<Knot *> adjNeighbors;
     std::vector<Knot *> diagNeighbors;
     std::vector<Knot *> flexNeighbors;
 };
 
+
+/*
+ * Some helpers for Runge-Kutta 4
+ */
+
+struct Derivative {
+    glm::vec3 dx;
+    glm::vec3 dv;
+};
+
+struct State {
+    glm::vec3 x;
+    glm::vec3 v;
+};
+
+Derivative evaluate(Knot *knot, float dt, glm::vec3 a, const Derivative &d);
+Derivative evaluate(Knot *knot, glm::vec3 a);
+
+/*
+Derivative evaluate(Knot *knot, float t, float dt, glm::vec3 a, const Derivative &d) {
+
+    State state;
+    //state.x = knot->getPosition() + d.dx * dt;
+    //state.v = knot->getVelocity() + d.dv * dt;
+
+    Derivative output;
+    //output.dx = state.v;
+    //output.dv = a;
+
+    return output;
+}
+*/
+/*
+
+Derivative evaluate(Knot *knot, float t, glm::vec3 a) {
+
+    Derivative output;
+    //output.dx = knot->getVelocity();
+    //output.dv = a;
+
+    return output;
+}
+*/
 #endif // KNOT_H

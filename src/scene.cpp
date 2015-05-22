@@ -36,7 +36,7 @@ void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Translate the scene
-    glm::mat4 scene_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.0f, -15.0f));
+    glm::mat4 scene_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -5.0f, -50.0f));
     scene_mat = glm::rotate( scene_mat, 20.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
     // Create some matrices needed for our shapes draw functions
@@ -55,15 +55,23 @@ void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 
 }
 
 
+void Scene::reset() {
+
+    for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it)
+        (*it)->getShape()->reset();
+}
+
+
 void Scene::checkCollisions() {
     //std::cout << "check scene collisions" << std::endl;
 }
 
 
 void Scene::step() {
+
     checkCollisions();
+    //applyG();
     applySpringForce();
-    applyG();
     integrateVelocities();
 }
 
@@ -71,7 +79,7 @@ void Scene::step() {
 void Scene::applySpringForce() {
 
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
-        (*it)->getShape()->applySpringForce(GRAVITY, dt);
+        (*it)->getShape()->applySpringForce(t, dt);
     }
 }
 
@@ -80,14 +88,14 @@ void Scene::integrateVelocities() {
 
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
         // Some euler stuff
-        (*it)->getShape()->integrateVelocity(dt);
+        (*it)->getShape()->integrateVelocity(acceleration, dt);
     }
 }
 
 void Scene::applyG() {
 
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
-        (*it)->getShape()->applyG(GRAVITY, dt);
+        (*it)->getShape()->applyG(acceleration, dt);
     }
 }
 

@@ -138,6 +138,11 @@ void Floor::init(glm::vec3 lightPos) {
 }
 
 
+void Floor::reset() {
+
+}
+
+
 void Floor::createVertices() {
     mVertices.push_back(glm::vec3(-1.0f * size + position.x, 0.0f + position.y, -1.0f * size + position.z));
     mVertices.push_back(glm::vec3(-1.0f * size + position.x, 0.0f + position.y,  1.0f * size + position.z));
@@ -180,16 +185,16 @@ void Floor::createUVs() {
 }
 
 
-void Floor::integrateVelocity(float dt) {
+void Floor::integrateVelocity(const glm::vec3 G, float dt) {
 
     position += velocity * dt;
 }
 
 
-void Floor::applyG(const float G, float dt) {
-    velocity += glm::vec3(0.0f, G, 0.0f) * dt;
+void Floor::applyG(const glm::vec3 G, float dt) {
+    velocity += G * dt;
 }
 
 
-void  Floor::applySpringForce(const float G, float dt) {
+void  Floor::applySpringForce(float t, float dt) {
 }

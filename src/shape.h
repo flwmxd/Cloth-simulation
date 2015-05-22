@@ -16,11 +16,13 @@ public:
     virtual void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int) = 0;
     virtual unsigned int getType() = 0;
     virtual void init(glm::vec3) = 0;
+    virtual void reset() = 0;
     virtual glm::vec3 getPosition() = 0;
-    virtual void integrateVelocity(float) = 0;
-    virtual void applyG(const float, float) = 0;
-    virtual void applySpringForce(const float, float) = 0;
+    virtual void integrateVelocity(const glm::vec3, float) = 0;
+    virtual void applyG(const glm::vec3, float) = 0;
+    virtual void applySpringForce(float, float) = 0;
     virtual void setBodyStatic(int) = 0;
+    virtual void setWindForce(glm::vec3) = 0;
 
     Body * body;
 

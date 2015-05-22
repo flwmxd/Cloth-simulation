@@ -73,12 +73,24 @@ void Mesh::createKnotNeighbors() {
         if(((index + 2)%numKnots != 0 && (index + 1)%numKnots != 0) || index == 0) {
             (*it)->addFlexNeighbor(*(it + 2));
             //std::cout << index << "\t";
-            //(*(it+2))->debugKnotPosition();
         }
 
         // Add knot 2 steps left
         if((index - 1)%numKnots != 0 && index%numKnots != 0) {
-            std::cout << index << "\t";
+            (*it)->addFlexNeighbor(*(it - 2));
+            //std::cout << index << "\t";
+        }
+
+        // Add knot 2 steps above
+        if((index < knots.size() - numKnots*2)) {
+            (*it)->addFlexNeighbor(*(it + numKnots*2));
+            //std::cout << index << "\t";
+        }
+
+        // Add knot 2 steps bellow
+        if((index > numKnots*2 - 1)) {
+            (*it)->addFlexNeighbor(*(it - numKnots*2));
+            //std::cout << index << "\t";
         }
 
         index++;
@@ -264,30 +276,43 @@ void Mesh::initSurface(glm::vec3 lightPos) {
 }
 
 
-void Mesh::applySpringForce(const float G, float dt) {
+void Mesh::reset() {
 
     for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
-        (*it)->applySpringForce();
-    }
-
-    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
-        (*it)->integrateForce(dt);
+        if(!(*it)->isStatic())
+            (*it)->reset();
     }
 }
 
 
-void Mesh::integrateVelocity(float dt) {
+void Mesh::applySpringForce(float t, float dt) {
 
     for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
-        (*it)->integrateVelocity(dt);
+        if((*it)->isStatic()) continue;
+            (*it)->applySpringForce(t);
+    }
+
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
+        if((*it)->isStatic()) continue;
+            (*it)->integrateForce(dt);
     }
 }
 
 
-void Mesh::applyG(const float G, float dt) {
+void Mesh::integrateVelocity(const glm::vec3 G, float dt) {
 
     for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
-        (*it)->applyG(G, dt);
+        if((*it)->isStatic()) continue;
+            (*it)->integrateVelocity(G, dt);
+    }
+}
+
+
+void Mesh::applyG(const glm::vec3 G, float dt) {
+
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
+        if((*it)->isStatic()) continue;
+            (*it)->applyG(G, dt);
     }
 }
 
@@ -303,6 +328,13 @@ void Mesh::debugMesh() {
 
 void Mesh::setBodyStatic(int index) {
     knots[index]->setStatic();
+}
+
+
+void Mesh::setWindForce(glm::vec3 w_f) {
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
+        (*it)->setWindForce(w_f);
+    }
 }
 
 

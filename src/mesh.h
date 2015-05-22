@@ -41,9 +41,11 @@ public:
     void initSurface(glm::vec3);
     void initKnotDrawing(glm::vec3);
 
-    void applySpringForce(const float, float);
-    void integrateVelocity(float);
-    void applyG(const float, float);
+    void reset();
+
+    void applySpringForce(float, float);
+    void integrateVelocity(const glm::vec3, float);
+    void applyG(const glm::vec3, float);
 
     // Getters
     unsigned int getType() { return MESH_SHAPE; };
@@ -51,6 +53,7 @@ public:
     
     // Setters
     void setBodyStatic(int);
+    void setWindForce(glm::vec3);
 
     // Debug functions
     void debugMesh();
