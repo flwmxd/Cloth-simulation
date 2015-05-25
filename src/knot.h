@@ -1,9 +1,7 @@
 #ifndef KNOT_H
 #define KNOT_H
 
-#define _MASS 1.0f
-#define SPRING_CONSTANT 0.00001f
-#define DAMPING 1.0f
+//#define _MASS 1.0f
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -22,11 +20,12 @@ public:
 
     void applyG(const glm::vec3, float);
 
-    void applySpringForce(float);
+    void applySpringForce(float, glm::vec3);
 
     void integrateForce(const float dt) {
-        this->velocity += (this->force / (float)_MASS) * dt;
-        this->force *= 0.95f;
+        this->velocity += (this->force / mass) * dt;
+        this->force *= force_damping;
+        //this->force.z *= 0.6f;
     }
 
     void addAdjNeighbor(Knot *k) {
@@ -43,20 +42,24 @@ public:
 
 
     // Getters
+    unsigned int getIndex() { return this->index; }
     glm::vec3 getPosition() { return this->position; }
     glm::vec3 getInitialPosition() { return this->initial_position; }
     glm::vec3 getVelocity() { return this->velocity; }
     glm::vec3 getForce() { return this->force; }
-    int getMass() { return _MASS; }    // MAKE THIS MORE PHYSICALY ACCURATE BY USING POLYGON AREA DIVIDED BY 3
+    int getMass() { return this->mass; }    // MAKE THIS MORE PHYSICALY ACCURATE BY USING POLYGON AREA DIVIDED BY 3
     std::vector<Knot *> getAdjNeighbors() { return this->adjNeighbors;  }
     std::vector<Knot *> getDiagNeighbors() { return this->diagNeighbors;  }
     std::vector<Knot *> getFlexNeighbors() { return this->flexNeighbors;  }
     bool isStatic() { return _isStatic; }
 
     // Setters
+    void setIndex(unsigned int i) { this->index = i; };
     void setStatic() { _isStatic = true; };
+    void setMass(float m) { this->mass = m; };
     void setPosition(glm::vec3 p) { this->position = p; };
     void setForce(glm::vec3 f) { this->force = f; };
+    void setForceDamping(float d) { this->force_damping = d; };
     void setWindForce(glm::vec3 w_f) { this->wind = w_f; };
     void addForce(glm::vec3 f) { this->force += f; };
 
@@ -65,10 +68,13 @@ public:
     }
 
 private:
+    unsigned int index;
+    float mass;
     glm::vec3 position;
     glm::vec3 initial_position;
     glm::vec3 velocity;
     glm::vec3 force;
+    float force_damping;
     glm::vec3 wind;
     bool _isStatic;
     std::vector<Knot *> adjNeighbors;

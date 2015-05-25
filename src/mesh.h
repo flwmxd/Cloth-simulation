@@ -25,15 +25,21 @@ public:
     Mesh(unsigned int, float, glm::vec3);
 
     // Member functions
-    void addKnot(Knot *);
+    void addKnot(Knot *, unsigned int);
 
     void createKnots();
     void createKnotNeighbors();
     void createKnotPoints();
     void createVertices();
     void createColorVector(glm::vec3);
+    void createFaceNormals();
 
+    // Functions that updates data for OpenGL every frame
+    void updateVertices();
+
+    // Some initial setups for the mesh
     void setup1();
+    void setup2();
 
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int);
     void drawSurface(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);
@@ -45,13 +51,15 @@ public:
 
     void reset();
 
-    void applySpringForce(float, float);
+    void applySpringForce(float, float, glm::vec3);
     void integrateVelocity(const glm::vec3, float);
     void applyG(const glm::vec3, float);
+    void resolveCollision(Knot *);
 
     // Getters
     unsigned int getType() { return MESH_SHAPE; };
     glm::vec3 getPosition() { return position; };
+    std::vector<Knot *> getKnots() { return this->knots; };
     
     // Setters
     void setBodyStatic(int);

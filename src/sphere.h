@@ -17,23 +17,16 @@ public:
     //~Sphere();
 
     // Member functions
-    void createSphere();
-
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int);
     void init(glm::vec3);
-
     void reset();
-    void setup1();
 
-    void integrateVelocity(const glm::vec3, float);
-    void applyG(const glm::vec3, float);
-    void applySpringForce(float, float);
+    void resolveCollision(Knot *);
 
     // Setters
     void setPosition(glm::vec3 p) { this->position = p; };
     void setVelocity(glm::vec3 v) { this->velocity = v; };
     void setBodyStatic(int indx) { this->_isStatic = true; };
-    void setWindForce(glm::vec3) {};
 
     // Getters
     unsigned int getType() { return SPHERE_SHAPE; };

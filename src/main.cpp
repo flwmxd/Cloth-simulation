@@ -76,9 +76,14 @@ int main(int argc, char* argv[]) {
 void init() {
 
     // Create our cloth mesh
-    cloth = new Body(new Mesh(7, 1.0f, glm::vec3(0.0f, 2.0f, 0.0f)));
+    cloth = new Body(new Mesh(7, 1.0f, glm::vec3(0.0f, 2.5f, 0.0f)));
     //cloth->setup1();
     cloth->getShape()->setBodyStatic(42);
+    //cloth->getShape()->setBodyStatic(43);
+    //cloth->getShape()->setBodyStatic(44);
+    //cloth->getShape()->setBodyStatic(45);
+    //cloth->getShape()->setBodyStatic(46);
+    //cloth->getShape()->setBodyStatic(47);
     cloth->getShape()->setBodyStatic(48);
     scene->addBody(cloth);
 
@@ -194,6 +199,11 @@ void keyCallback(int key, int action)
         case SGCT_KEY_1:
             if(action == SGCT_PRESS)
                 cloth->getShape()->setup1();
+            break;
+
+        case SGCT_KEY_2:
+            if(action == SGCT_PRESS)
+                cloth->getShape()->setup2();
             break;
         }
     }

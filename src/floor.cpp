@@ -40,6 +40,7 @@ void Floor::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 }
 
+
 void Floor::init(glm::vec3 lightPos) {
 
     std::cout << "Initializing floor..." << std::endl;
@@ -138,7 +139,7 @@ void Floor::init(glm::vec3 lightPos) {
 }
 
 
-void Floor::reset() {
+void Floor::resolveCollision(Knot *) {
 
 }
 
@@ -151,6 +152,7 @@ void Floor::createVertices() {
     mVertices.push_back(glm::vec3( 1.0f * size + position.x, 0.0f + position.y,  1.0f * size + position.z));
     mVertices.push_back(glm::vec3( 1.0f * size + position.x, 0.0f + position.y, -1.0f * size + position.z));
 }
+
 
 void Floor::createFaceNormals() {
 
@@ -182,24 +184,4 @@ void Floor::createUVs() {
     mUvs.push_back(glm::vec2(0.0f, 0.0f));
     mUvs.push_back(glm::vec2(1.0f, 1.0f));
     mUvs.push_back(glm::vec2(1.0f, 0.0f));
-}
-
-
-void Floor::integrateVelocity(const glm::vec3 G, float dt) {
-
-    position += velocity * dt;
-}
-
-
-void Floor::applyG(const glm::vec3 G, float dt) {
-    velocity += G * dt;
-}
-
-
-void  Floor::applySpringForce(float t, float dt) {
-}
-
-
-void Floor::setup1() {
-    
 }

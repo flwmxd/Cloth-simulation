@@ -5,6 +5,8 @@ Knot::Knot(glm::vec3 p, bool is)
 
     velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     force = glm::vec3(0.0f, 0.0f, 0.0f);
+    force_damping = 0.8f;
+    mass = 3.0f;
 };
 
 
@@ -12,7 +14,6 @@ void Knot::reset() {
     position = initial_position;
     velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     force = glm::vec3(0.0f, 0.0f, 0.0f);
-
 }
 
 
@@ -44,9 +45,10 @@ void Knot::applyG(const glm::vec3 G, float dt) {
 };
 
 
-void Knot::applySpringForce(float t) {
+void Knot::applySpringForce(float t, glm::vec3 a) {
 
-    //if(!_isStatic) {
+    // No need to calculate forces on the static knots
+    if(!_isStatic) {
 
         //glm::vec3 f_int(0.0f, 0.0f, 0.0f);
         glm::vec3 delta_p;
@@ -54,13 +56,12 @@ void Knot::applySpringForce(float t) {
         glm::vec3 delta_v;
         glm::vec3 f;
 
-        float k = 2.5f;
-        float b = 3.0f;
-        float l = 2.5f;
-        float l_diag = sqrt(l*l);
-        float l_double = l*l;
+        float k = 40.0f;
+        float b = 8.0f;
+        float l = 3.0f;
+        float l_diag = sqrt(l*l + l*l);
+        float l_double = l * 2.0f;
         float spring_elongation;
-        wind = glm::vec3(sin(2.0f * t)*0.0f, 0.0f*sin(5.0f * t), 0.0f);
 
         for(std::vector<Knot *>::iterator it = adjNeighbors.begin(); it != adjNeighbors.end(); ++it) {
 
@@ -71,7 +72,6 @@ void Knot::applySpringForce(float t) {
             spring_elongation = glm::length(delta_p) - l;
 
             f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
-            f += wind;
 
             (*it)->addForce(-f);
             this->force += f;
@@ -87,7 +87,6 @@ void Knot::applySpringForce(float t) {
             spring_elongation = glm::length(delta_p) - l_diag;
 
             f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
-            f += wind;
 
             (*it)->addForce(-f);
             this->force += f;
@@ -103,14 +102,13 @@ void Knot::applySpringForce(float t) {
             spring_elongation = glm::length(delta_p) - l_double;
 
             f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
-            f += wind;
 
             (*it)->addForce(-f);
             this->force += f;
         }
 
        // std::cout << std::endl << std::endl;
-    //}
+    }
 }
 
 

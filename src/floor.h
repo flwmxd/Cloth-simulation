@@ -21,17 +21,12 @@ public:
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int);
     void init(glm::vec3);
 
-    void reset();
+    void resolveCollision(Knot *);
 
     void createVertices();
     void createFaceNormals();
     void createVertexNormals();
     void createUVs();
-    void setup1();
-
-    void integrateVelocity(const glm::vec3, float);
-    void applyG(const glm::vec3, float);
-    void applySpringForce(float, float);
 
     // Getters
     unsigned int getType() { return FLOOR_SHAPE; };
@@ -39,7 +34,6 @@ public:
     
     // Setters
     void setBodyStatic(int index) { _isStatic = true; };
-    void setWindForce(glm::vec3 w_f) {};
     void setPosition(glm::vec3 p) { position = p; };
 
 private:

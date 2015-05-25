@@ -63,14 +63,23 @@ void Scene::reset() {
 
 
 void Scene::checkCollisions() {
-    //std::cout << "check scene collisions" << std::endl;
+
+    std::vector<Knot *>mesh_knots = bodies.front()->getShape()->getKnots();
+
+    for(std::vector<Body *>::iterator body_it = bodies.begin(); body_it != bodies.end(); ++body_it) {
+        for(std::vector<Knot *>::iterator knot_it = mesh_knots.begin(); knot_it != mesh_knots.end(); ++knot_it) {
+            // if a shape is not the cloth we want to check collisions
+            if((*body_it)->getShape()->getType() != 0) {
+                (*body_it)->getShape()->resolveCollision((*knot_it));
+            }
+        }
+    }
 }
 
 
 void Scene::step() {
-
-    checkCollisions();
-    //applyG();
+    //checkCollisions();
+    applyG();
     applySpringForce();
     integrateVelocities();
 }
@@ -79,7 +88,7 @@ void Scene::step() {
 void Scene::applySpringForce() {
 
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
-        (*it)->getShape()->applySpringForce(t, dt);
+        (*it)->getShape()->applySpringForce(t, dt, acceleration);
     }
 }
 
