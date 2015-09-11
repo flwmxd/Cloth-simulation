@@ -11,8 +11,27 @@ Mesh::Mesh(unsigned int n, float k, glm::vec3 p)
     createKnotPoints();
     createVertices();
     createFaceNormals();
+    createVertexNormals();
     createColorVector(glm::vec3(1.0f, 0.0f, 0.0f));
+    createUVs();
 }
+
+
+Mesh::Mesh(unsigned int n, float k, glm::vec3 p, std::string t) 
+    : numKnots(n), knotSpacing(k), position(p), textureName(t) {
+
+    size = std::floor(static_cast<float>(n) / 2.0f) * k;
+    std::cout << "size: " << size << std::endl;
+    createKnots();
+    createKnotNeighbors();
+    createKnotPoints();
+    createVertices();
+    createFaceNormals();
+    createVertexNormals();
+    createColorVector(glm::vec3(1.0f, 0.0f, 0.0f));
+    createUVs();
+}
+
 
 void Mesh::addKnot(Knot * k, unsigned int i) {
     knots.push_back(k);
@@ -27,12 +46,10 @@ void Mesh::createKnots() {
 
     for(int y = -floor(numKnots / 2); y < floor(numKnots / 2) + 1; y++) {
         for(int x = -floor(numKnots / 2); x < floor(numKnots / 2) + 1; x++) {
-            
-            addKnot(new Knot(size * glm::vec3(static_cast<float>(x) * knotSpacing + position.x,
+            addKnot(new Knot(glm::vec3(static_cast<float>(x) * knotSpacing + position.x,
                                               static_cast<float>(y) * knotSpacing + position.y, 
-                                              position.z)),
+                                              position.z), knotSpacing),
                                               index);
-
             index++;
         }
     }
@@ -171,6 +188,176 @@ void Mesh::createFaceNormals() {
     }
 }
 
+void Mesh::createVertexNormals() {
+   
+    std::vector<unsigned int> faceNormalIndices;
+    //std::cout << "SIZE: " << knots.size() << std::endl;
+    unsigned int row = 0;
+    for(unsigned int i = 0; i < knots.size(); i++) {
+        if(i < numKnots) {
+            if(i == 0) {
+                //faceNormalIndices.push_back(i);
+                //faceNormalIndices.push_back(i + 1);
+                //std::cout << "indices to add at " << i << ": " << i << ", " << i + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back(i + 1);
+            } else if(i == numKnots - 1) {
+                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << std::endl << std::endl;
+                faceNormalIndices.push_back(((i - row) * 2) - 1);
+            } else {
+                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << ", " << ((i - row) * 2) << ", " << ((i - row) * 2) + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back(((i - row) * 2) - 1);
+                faceNormalIndices.push_back(((i - row) * 2));
+                faceNormalIndices.push_back(((i - row) * 2) + 1);
+            }
+        } else if(i > (numKnots*numKnots) - (numKnots + 1)) {
+            if(i == numKnots*numKnots - 1) {
+                //std::cout << "indices to add at " << i << ": " << (i - (row + 1)) * 2 - (numKnots) * 2 << ", " << (i - (row + 1)) * 2 - (numKnots) * 2 + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2);
+                faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2 + 1);
+            } else if(i == (numKnots*numKnots) - numKnots) {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+            } else {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 1);
+            }
+        } else {
+            if(i%numKnots == 0) {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 << ", " << (i - row - 1) * 2 + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 + 1);
+            } else if((i+1)%numKnots == 0) {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots) * 2 + 1 << ", " << ((i - row - 1) * 2) - 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2 + 1);
+                faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
+            } else {
+                //std::cout << "indices to add at " << i << ": " << ((i - row - 1) * 2)  << ", " << ((i - row - 1) * 2) - 1 << ", " << ((i - row - 1) * 2) + 1;
+                //std::cout << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2);
+                faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
+                faceNormalIndices.push_back(((i - row - 1) * 2) + 1);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 1);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+            }
+        }
+
+        if((i+1)%(numKnots) == 0 && i > numKnots) {
+            row++;
+        }
+
+        mUniqueVertexNormals.push_back(computeVertexNormal(faceNormalIndices));
+        faceNormalIndices.clear();
+    }
+
+    createVertexNormalsList();
+
+    /*std::cout << std::endl;
+    for(std::vector<glm::vec3>::iterator it = mUniqueVertexNormals.begin(); it != mUniqueVertexNormals.end(); ++it) {
+        std::cout << "vertex normal: (" << (*it).x << ", " << (*it).y << ", " << (*it).z << ")" << std::endl;
+    }
+    std::cout << std::endl;*/
+    std::cout << "mUniqueVertexNormals.size(): " << mUniqueVertexNormals.size() << std::endl;
+    std::cout << "mVertices.size(): " << mVertices.size() << std::endl;
+}
+
+
+glm::vec3 Mesh::computeVertexNormal(std::vector<unsigned int> indices) {
+
+    glm::vec3 vertexNormal = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    for(std::vector<unsigned int>::iterator it = indices.begin(); it != indices.end(); ++it) {
+        vertexNormal += mFaceNormals[*it];
+    }
+    vertexNormal = glm::normalize(vertexNormal);
+
+    return vertexNormal;
+}
+
+
+void Mesh::createVertexNormalsList() {
+
+    for(int i = 0; i < knots.size(); i++) {
+        
+        // Check if we're on the border
+        if((i+1)%numKnots != 0 || i == 0) {
+
+            // Face 1
+            mVertexNormals.push_back(mUniqueVertexNormals[i]);
+            mVertexNormals.push_back(mUniqueVertexNormals[i + numKnots + 1]);
+            mVertexNormals.push_back(mUniqueVertexNormals[i + numKnots]);
+            // Face 2
+            mVertexNormals.push_back(mUniqueVertexNormals[i]);
+            mVertexNormals.push_back(mUniqueVertexNormals[i + 1]);
+            mVertexNormals.push_back(mUniqueVertexNormals[i + numKnots + 1]);
+        }
+    }
+}
+
+
+void Mesh::createUVs() {
+
+ /*   unsigned int row = 0;
+
+    // FIX THIS SHIT, TOOOO MAAAANNNYYYY!!!
+
+    for(int i = 0; i < numKnots; i++) {
+        for(int j = 0; j < numKnots; j++) {
+            //if((i+1)%numKnots != 0 || i == 0) {
+            
+            // Face 1
+            mUvs.push_back(glm::vec2(static_cast<float>(i) / static_cast<float>(numKnots), static_cast<float>(j) / static_cast<float>(numKnots)));
+            mUvs.push_back(glm::vec2(static_cast<float>(i+1) / static_cast<float>(numKnots), static_cast<float>(j+1) / static_cast<float>(numKnots)));
+            mUvs.push_back(glm::vec2(static_cast<float>(i) / static_cast<float>(numKnots), static_cast<float>(j+1) / static_cast<float>(numKnots)));
+
+            // Face 2
+            mUvs.push_back(glm::vec2(static_cast<float>(i) / static_cast<float>(numKnots), static_cast<float>(j) / static_cast<float>(numKnots)));
+            mUvs.push_back(glm::vec2(static_cast<float>(i+1) / static_cast<float>(numKnots), static_cast<float>(j) / static_cast<float>(numKnots)));
+            mUvs.push_back(glm::vec2(static_cast<float>(i+1) / static_cast<float>(numKnots), static_cast<float>(j+1) / static_cast<float>(numKnots)));
+        //}
+        }
+    }
+*/
+    float d_uv = 1.0f / static_cast<float>(numKnots-1);
+    unsigned int row = 0, col = 0;
+
+    for(unsigned int i = 0; i < knots.size(); i++) {
+        
+        if(((i+1)%numKnots != 0 && i < (numKnots*numKnots) - numKnots) || (i == 0 && i < (numKnots*numKnots) - numKnots)) {
+            //std::cout << "i: " << i << std::endl;
+            mUvs.push_back(glm::vec2(static_cast<float>(col) * d_uv, static_cast<float>(row) * d_uv));
+            mUvs.push_back(glm::vec2(static_cast<float>(col+1) * d_uv, static_cast<float>(row+1) * d_uv));
+            mUvs.push_back(glm::vec2(static_cast<float>(col) * d_uv, static_cast<float>(row+1) * d_uv));
+
+            mUvs.push_back(glm::vec2(static_cast<float>(col) * d_uv, static_cast<float>(row) * d_uv));
+            mUvs.push_back(glm::vec2(static_cast<float>(col+1) * d_uv, static_cast<float>(row) * d_uv));
+            mUvs.push_back(glm::vec2(static_cast<float>(col+1) * d_uv, static_cast<float>(row+1) * d_uv));
+        }
+
+        col++;
+
+        if((i+1)%(numKnots) == 0 ) {
+            row++;
+            col = 0;
+            //std::cout << "i: " << i << std::endl;
+        }
+    }
+
+    unsigned int indx = 0;
+    for(std::vector<glm::vec2>::iterator it = mUvs.begin(); it != mUvs.end(); ++it) {
+        std::cout << "UV " << indx << " : (" << (*it).x << ", " << (*it).y << ")" << std::endl;
+        indx++;
+    }
+
+    std::cout << std::endl << "mUvs.size(): " << mUvs.size() << std::endl;
+    std::cout << "mVertices.size(): " << mVertices.size() << std::endl;
+
+}
+
 
 void Mesh::updateVertices() {
 
@@ -194,6 +381,115 @@ void Mesh::updateVertices() {
 }
 
 
+void Mesh::updateFaceNormals() {
+
+    unsigned int indx = 0;
+
+    for(std::vector<glm::vec3>::iterator it = mVertices.begin(); it != mVertices.end(); std::advance(it, 3)) {
+        
+        glm::vec3 v0 = (*(it + 1)) - (*it);
+        glm::vec3 v1 = (*(it + 2)) - (*it);
+
+        mFaceNormals[indx] = glm::normalize(glm::cross(v0, v1));
+
+        indx++;
+    }
+}
+
+
+void Mesh::updateVertexNormals() {
+    
+    std::vector<unsigned int> faceNormalIndices;
+    unsigned int row = 0;
+
+    for(unsigned int i = 0; i < knots.size(); i++) {
+        if(i < numKnots) {
+            if(i == 0) {
+                //faceNormalIndices.push_back(i);
+                //faceNormalIndices.push_back(i + 1);
+                //std::cout << "indices to add at " << i << ": " << i << ", " << i + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back(i + 1);
+            } else if(i == numKnots - 1) {
+                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << std::endl << std::endl;
+                faceNormalIndices.push_back(((i - row) * 2) - 1);
+            } else {
+                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << ", " << ((i - row) * 2) << ", " << ((i - row) * 2) + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back(((i - row) * 2) - 1);
+                faceNormalIndices.push_back(((i - row) * 2));
+                faceNormalIndices.push_back(((i - row) * 2) + 1);
+            }
+        } else if(i > (numKnots*numKnots) - (numKnots + 1)) {
+            if(i == numKnots*numKnots - 1) {
+                //std::cout << "ROW: " << row << std::endl;
+                //std::cout << "indices to add at " << i << ": " << (i - (row + 1)) * 2 - (numKnots) * 2 << ", " << (i - (row + 1)) * 2 - (numKnots) * 2 + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2);
+                faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2 + 1);
+            } else if(i == (numKnots*numKnots) - numKnots) {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+            } else {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 1);
+            }
+        } else {
+            if(i%numKnots == 0) {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 << ", " << (i - row - 1) * 2 + 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 + 1);
+            } else if((i+1)%numKnots == 0) {
+                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots) * 2 + 1 << ", " << ((i - row - 1) * 2) - 1 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2 + 1);
+                faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
+            } else {
+                //std::cout << "indices to add at " << i << ": " << ((i - row - 1) * 2)  << ", " << ((i - row - 1) * 2) - 1 << ", " << ((i - row - 1) * 2) + 1;
+                //std::cout << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
+                faceNormalIndices.push_back((i - row - 1) * 2);
+                faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
+                faceNormalIndices.push_back(((i - row - 1) * 2) + 1);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 2);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 1);
+                faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
+            }
+        }
+
+        if((i+1)%(numKnots) == 0 && i > numKnots) {
+            row++;
+        }
+
+        mUniqueVertexNormals[i] = computeVertexNormal(faceNormalIndices);
+        faceNormalIndices.clear();
+    }
+}
+
+
+void Mesh::updateVertexNormalsList() {
+
+    unsigned int indx = 0;
+
+    for(int i = 0; i < knots.size(); i++) {
+        
+        // Check if we're on the border
+        if((i+1)%numKnots != 0 || i == 0) {
+
+            // Face 1
+            mVertexNormals[indx] = mUniqueVertexNormals[i];
+            mVertexNormals[indx + 1] = mUniqueVertexNormals[i + numKnots + 1];
+            mVertexNormals[indx + 2] = mUniqueVertexNormals[i + numKnots];
+            // Face 2
+            mVertexNormals[indx + 3] = mUniqueVertexNormals[i];
+            mVertexNormals[indx + 4] = mUniqueVertexNormals[i + 1];
+            mVertexNormals[indx + 5] = mUniqueVertexNormals[i + numKnots + 1];
+
+            indx += 6;
+        }
+    }
+}
+
+
 void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM, unsigned int drawType) {
 
     if(drawType == DRAW_POINTS)
@@ -208,20 +504,43 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
  */
 void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM) {
 
-    // Update our vertex positions
+    // Update vertex positions and normals
     updateVertices();
+    updateFaceNormals();
+    updateVertexNormals();
+    updateVertexNormalsList();
+
+    // Material properties
+    ambient = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
+    diffuse = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+    specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    specularity = 40.0f;
 
     // Disable back face culling, since we want both sides of the cloth to be visible
     glDisable(GL_CULL_FACE);
 
-    sgct::ShaderManager::instance()->bindShaderProgram("mesh");
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureByHandle(texHandle));
+
+    sgct::ShaderManager::instance()->bindShaderProgram("cloth_plain");
 
     glUniformMatrix4fv(MVPLoc, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(MVLoc,       1, GL_FALSE, &MV[0][0]);
+    glUniformMatrix4fv(MVLightLoc,  1, GL_FALSE, &MV_light[0][0]);
+    glUniformMatrix3fv(NMLoc,       1, GL_FALSE, &NM[0][0]);
+    glUniform4f(lightAmbLoc, ambient.r, ambient.g, ambient.b, ambient.a);
+    glUniform4f(lightDifLoc, diffuse.r, diffuse.g, diffuse.b, diffuse.a);
+    glUniform4f(lightSpeLoc, specular.r, specular.g, specular.b, specular.a);
+    glUniform1f(specularityLoc, specularity);
 
     // Rebind the buffer data, since our vertices are now updated
     glBindVertexArray(vertexArray);
     glBindBuffer(GL_ARRAY_BUFFER, vertexPositionBuffer);
     glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(glm::vec3), &mVertices[0], GL_STATIC_DRAW);
+
+    // Rebind the buffer data, normals are now updated
+    glBindBuffer(GL_ARRAY_BUFFER, normalCoordBuffer);
+    glBufferData(GL_ARRAY_BUFFER, mVertexNormals.size() * sizeof(glm::vec3), &mVertexNormals[0], GL_STATIC_DRAW);
 
     // Draw the triangles
     glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
@@ -294,20 +613,38 @@ void Mesh::initSurface(glm::vec3 lightPos) {
     // TODO
     std::cout << "Initializing mesh" << std::endl;
 
+    // Load texture
+    sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
+    sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
+    sgct::TextureManager::instance()->loadTexure(texHandle, textureName,  "./textures/" + textureName + ".png", true);
+
     sgct::ShaderManager::instance()->addShaderProgram(
-        "mesh",
-        "shaders/mesh_bare.vert",
-        "shaders/mesh_bare.frag");
+        "cloth_plain",
+        "shaders/cloth_plain.vert",
+        "shaders/cloth_plain.frag");
 
-    sgct::ShaderManager::instance()->bindShaderProgram("mesh");
+    sgct::ShaderManager::instance()->bindShaderProgram("cloth_plain");
 
-    MVPLoc = sgct::ShaderManager::instance()->getShaderProgram("mesh").getUniformLocation( "MVP" );
+    MVPLoc          = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MVP" );
+    GLint TexLoc    = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "Tex" );
+    MVLoc           = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MV" );
+    MVLightLoc      = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MVLight" );
+    NMLoc           = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "normalMatrix" );
+    lightPosLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightPos" );
+    lightAmbLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightAmbient" );
+    lightDifLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightDiffuse" );
+    lightSpeLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightSpecular" );
+    specularityLoc  = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "specularity" );
 
-    std::cout << "shaders/mesh_bare.vert loaded" << std::endl;
-    std::cout << "shaders/mesh_bare.frag loaded" << std::endl;
+    std::cout << "shaders/cloth_plain.vert loaded" << std::endl;
+    std::cout << "shaders/cloth_plain.frag loaded" << std::endl;
 
+    // Setup uniforms for shaders
+    glUniform1i(TexLoc, 0);
+    glUniform4f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z, 1.0f);
+
+    // Unbind the shaders
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
 
     // Generate the VAO
     glGenVertexArrays(1, &vertexArray);
@@ -330,23 +667,39 @@ void Mesh::initSurface(glm::vec3 lightPos) {
     );
 
 
-    glGenBuffers(1, &vertexColorBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffer);
-
-    glBufferData(GL_ARRAY_BUFFER, mColors.size() * sizeof(glm::vec3), &mColors[0], GL_STATIC_DRAW);
+    glGenBuffers(1, &normalCoordBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, normalCoordBuffer);
+    // Upload vertex data to GPU
+    glBufferData(GL_ARRAY_BUFFER, mVertexNormals.size() * sizeof(glm::vec3), &mVertexNormals[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        0,
-        reinterpret_cast<void*>(0)
+        1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+        3,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        reinterpret_cast<void*>(0) // array buffer offset
+    );
+
+    // Upload uv data to GPU
+    glGenBuffers(1, &texCoordBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, texCoordBuffer);
+    glBufferData(GL_ARRAY_BUFFER, mUvs.size() * sizeof(glm::vec2), &mUvs[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(
+        2,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
+        2,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        reinterpret_cast<void*>(0) // array buffer offset
     );
 
     // Unbind buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    std::cout << "Mesh initialized" << std::endl;
 }
 
 
@@ -435,12 +788,12 @@ void Mesh::setup1() {
     for(std::vector<Knot* >::iterator it = knots.begin(); it != knots.end(); ++it) {
         
         (*it)->setPosition(glm::vec3(x, y, z));
-        (*it)->setForceDamping(0.8f);
-        (*it)->setMass(3.0f);
-        x += knotSpacing * 3.0f;
+        (*it)->setForceDamping(0.75f);
+        (*it)->setMass(0.6f);
+        x += knotSpacing;
 
         if((indx + 1)%numKnots == 0 && indx > 0) {
-            y += knotSpacing * 3.0f;
+            y += knotSpacing;
             x = init_pos.x;
         }
         indx++;
@@ -462,7 +815,7 @@ void Mesh::setup2() {
     glm::vec3 init_pos = knots.back()->getInitialPosition();
     float x = init_pos.x;
     float y = init_pos.y;
-    float z = -(3.0f * numKnots) + 3.0f;
+    float z = -((numKnots - 1.0f) * knotSpacing);
 
     // Give all knots new positions
     for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
@@ -470,12 +823,12 @@ void Mesh::setup2() {
         (*it)->setPosition(glm::vec3(x, y, z));
         glm::vec3 init_force = (*it)->getForce();
         //(*it)->setForce(glm::vec3(init_force.x*0.5, init_force.y*0.5, init_force.z*0.5));
-        (*it)->setForceDamping(0.5f);
-        (*it)->setMass(0.85f);
-        x -= knotSpacing * 3.0f;
+        (*it)->setForceDamping(0.75f);
+        (*it)->setMass(0.6f);
+        x -= knotSpacing;
 
         if((indx + 1)%numKnots == 0 && indx > 0) {
-            z += knotSpacing * 3.0f;
+            z += knotSpacing;
             x = init_pos.x;
         }
         indx++;

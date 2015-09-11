@@ -32,6 +32,7 @@ public:
     virtual void setBodyStatic(int) = 0;
     virtual void setWindForce(glm::vec3) {};
     virtual void setPosition(glm::vec3) = 0;
+    virtual void setTexture(std::string) {};
     
     virtual void setup1() {};
     virtual void setup2() {};

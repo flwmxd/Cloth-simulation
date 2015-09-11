@@ -1,12 +1,12 @@
 #include "knot.h"
 
-Knot::Knot(glm::vec3 p, bool is)
-    : position(p), initial_position(p), _isStatic(is) {
+Knot::Knot(glm::vec3 p, float l, bool is)
+    : position(p), springLength(l), initial_position(p), _isStatic(is) {
 
     velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     force = glm::vec3(0.0f, 0.0f, 0.0f);
-    force_damping = 0.8f;
-    mass = 3.0f;
+    force_damping = 0.75f;
+    mass = 0.6f;
 };
 
 
@@ -18,12 +18,6 @@ void Knot::reset() {
 
 
 void Knot::integrateVelocity(const glm::vec3 G, float dt) {
-
-/*    
-    // Euler
-    if(!_isStatic)
-        position += velocity * dt;
-*/
 
     // Runge-Kutta 4
     Derivative k1 = evaluate(this, G);
@@ -56,9 +50,9 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
         glm::vec3 delta_v;
         glm::vec3 f;
 
-        float k = 40.0f;
-        float b = 8.0f;
-        float l = 3.0f;
+        float k = 500.0f;
+        float b = 30.0f;
+        float l = springLength;
         float l_diag = sqrt(l*l + l*l);
         float l_double = l * 2.0f;
         float spring_elongation;
@@ -72,7 +66,7 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
             spring_elongation = glm::length(delta_p) - l;
 
             f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
-
+            f += -0.1f * this->velocity;
             (*it)->addForce(-f);
             this->force += f;
         }

@@ -11,7 +11,7 @@ class Knot {
 
 public:
     // Constructors
-    Knot(glm::vec3, bool is = false);
+    Knot(glm::vec3, float, bool is = false);
 
     // Member functions
     void reset();
@@ -70,6 +70,7 @@ public:
 private:
     unsigned int index;
     float mass;
+    float springLength;
     glm::vec3 position;
     glm::vec3 initial_position;
     glm::vec3 velocity;

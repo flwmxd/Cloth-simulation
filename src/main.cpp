@@ -32,6 +32,10 @@ double mouseXPos[] = { 0.0, 0.0 };
 // Toggle draw functions
 unsigned int drawType = 0;
 
+bool play_pause = false;
+
+unsigned int simulations_per_frame = 20;
+
 glm::vec3 view(0.0f, 0.0f, 1.0f);
 
 sgct::SharedObject<glm::mat4> cameraRot;
@@ -76,34 +80,40 @@ int main(int argc, char* argv[]) {
 void init() {
 
     // Create our cloth mesh
-    cloth = new Body(new Mesh(7, 1.0f, glm::vec3(0.0f, 2.5f, 0.0f)));
-    //cloth->setup1();
-    cloth->getShape()->setBodyStatic(42);
-    //cloth->getShape()->setBodyStatic(43);
-    //cloth->getShape()->setBodyStatic(44);
-    //cloth->getShape()->setBodyStatic(45);
-    //cloth->getShape()->setBodyStatic(46);
-    //cloth->getShape()->setBodyStatic(47);
-    cloth->getShape()->setBodyStatic(48);
+    cloth = new Body(new Mesh(33, 0.5f, glm::vec3(0.0f, 7.0f, 0.0f), "kappa"));
+    //cloth->getShape()->setup1();
+    cloth->getShape()->setBodyStatic(1056);
+    cloth->getShape()->setBodyStatic(1064);
+    cloth->getShape()->setBodyStatic(1072);
+    cloth->getShape()->setBodyStatic(1080);
+    cloth->getShape()->setBodyStatic(1088);
+    /*cloth->getShape()->setBodyStatic(42);
+    cloth->getShape()->setBodyStatic(45);
+    cloth->getShape()->setBodyStatic(48);*/
     scene->addBody(cloth);
 
 
-    sphere = new Body(new Sphere(2.0f, glm::vec3(0.0f, 0.0f, 3.0f)));
-    scene->addBody(sphere);
+    //sphere = new Body(new Sphere(2.0f, glm::vec3(0.0f, 0.0f, 3.0f)));
+    //scene->addBody(sphere);
 
     // Create a floor for some orientation help
     floor_ = new Body(new Floor(glm::vec3(0.0f, -3.0f, 0.0f), 30.0f, "checker"));
     scene->addBody(floor_);
     
     scene->init();
-    
 }
 
 
 void draw() {
     scene->setTime(static_cast<float>(curr_time.getVal()));
-    scene->setDt(gEngine->getDt());
-    scene->step();
+    scene->setDt(gEngine->getDt() / simulations_per_frame);
+    
+    if(play_pause) {
+        for(unsigned int i = 0; i < simulations_per_frame; i++) {
+            scene->step();
+        }
+    }
+
     scene->draw(gEngine->getActiveModelViewProjectionMatrix(), gEngine->getActiveModelViewMatrix(), cameraRot.getVal(), drawType);
 }
 
@@ -205,6 +215,14 @@ void keyCallback(int key, int action)
             if(action == SGCT_PRESS)
                 cloth->getShape()->setup2();
             break;
+
+        case SGCT_KEY_C:
+            if(action == SGCT_PRESS) {
+                if(play_pause)
+                    play_pause = false;
+                else
+                    play_pause = true;
+            }
         }
     }
 }

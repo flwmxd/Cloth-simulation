@@ -23,6 +23,7 @@ public:
     // Constructors
     Mesh() { };
     Mesh(unsigned int, float, glm::vec3);
+    Mesh(unsigned int, float, glm::vec3, std::string);
 
     // Member functions
     void addKnot(Knot *, unsigned int);
@@ -33,9 +34,16 @@ public:
     void createVertices();
     void createColorVector(glm::vec3);
     void createFaceNormals();
+    void createVertexNormals();
+    glm::vec3 computeVertexNormal(std::vector<unsigned int>);
+    void createVertexNormalsList();
+    void createUVs();
 
     // Functions that updates data for OpenGL every frame
     void updateVertices();
+    void updateFaceNormals();
+    void updateVertexNormals();
+    void updateVertexNormalsList();
 
     // Some initial setups for the mesh
     void setup1();
@@ -65,6 +73,14 @@ public:
     void setBodyStatic(int);
     void setWindForce(glm::vec3);
     void setPosition(glm::vec3 p) { position = p; };
+    void setTexture(std::string t) { 
+        textureName = t;
+        sgct::TextureManager::instance()->loadTexure(
+            texHandle, 
+            textureName, 
+            "./textures/" + textureName + ".png",
+            true);
+    };
 
     // Debug functions
     void debugMesh();
@@ -77,22 +93,42 @@ private:
     float knotSpacing;
     glm::vec3 position;
     float size;
+    std::string textureName;
 
     // Data for OpenGl
     std::vector<glm::vec3> mVertices;
     std::vector<glm::vec3> mFaceNormals;
+    std::vector<glm::vec3> mUniqueVertexNormals;
     std::vector<glm::vec3> mVertexNormals;
-    std::vector<glm::vec3> mUvs;
+    std::vector<glm::vec2> mUvs;
     std::vector<glm::vec3> mColors;
     std::vector<sgct_utils::SGCTSphere *> points;
 
     GLuint vertexArray;
     GLuint vertexPositionBuffer;
+    GLuint normalCoordBuffer;
     GLuint vertexColorBuffer;
+    GLuint texCoordBuffer;
 
-    GLint MVPLoc;
-    GLint MVPLocKnots;
+    // Shader data
+    GLint MVPLoc;           // MVP matrix
+    GLint MVPLocKnots;      // Positions of knots 
+    GLint MVLoc;            // MV matrix
+    GLint MVLightLoc;       // MV light matrix
+    GLint NMLoc;            // Normal matrix
+    GLint lightPosLoc;      // Light position
+    GLint lightAmbLoc;      // Ambient light
+    GLint lightDifLoc;      // Diffuse light
+    GLint lightSpeLoc;      // Specular light
+    GLint specularityLoc;   // Specular constant
 
+    // Material data
+    glm::vec4 ambient;
+    glm::vec4 diffuse;
+    glm::vec4 specular;
+    float specularity;
+
+    size_t texHandle;
 };
 
 #endif // MESH_H
