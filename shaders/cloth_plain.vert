@@ -5,6 +5,8 @@
 layout(location = 0) in vec3 vertPositions;
 layout(location = 1) in vec3 normals;
 layout(location = 2) in vec2 texCoords;
+layout(location = 3) in vec3 tangents;
+layout(location = 4) in vec3 bitangents;
 
 uniform mat4 MVP;
 uniform mat4 MV;
@@ -15,6 +17,8 @@ out vec2 UV;
 out vec3 normal;
 out vec3 v;
 out vec3 light_dir;
+out vec3 Ps;
+out vec3 Pt;
 
 void main()
 {
@@ -23,9 +27,12 @@ void main()
     UV = texCoords;
     v = vec3(MV * vec4(vertPositions, 1.0));
     normal = normals;
-    vec4 lpos = vec4(0.5, 2.0, -10.0, 1.0);
+    //vec4 lpos = vec4(0.5, 10.0, -10.0, 1.0);
     vec3 l = vec3(MV * lightPos);
     light_dir = normalize(l - v);
+
+    Ps = normalize( mat3(MV) * tangents );
+    Pt = normalize( mat3(MV) * bitangents );
     //light_dir = normalize(vec3(1.0, 1.0, 1.0));
 }
 

@@ -3,8 +3,9 @@
 //uniform sampler2D Tex;
 
 out vec4 color;
+uniform vec4 in_color;
 
 void main()
 {
-    color = vec4(0.8, 0.3, 0.3, 1.0);
+    color = in_color;
 }

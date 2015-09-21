@@ -20,7 +20,9 @@ public:
     //~Scene();
 
     void init();
+    void initLightSource();
     void draw(glm::mat4, glm::mat4, glm::mat4, unsigned int);
+    void drawLightSource(glm::mat4);
 
     void reset();
     
@@ -48,6 +50,10 @@ private:
 
     // Position of the lightsource
     glm::vec3 lightPosition;
+    GLint MVPLightLoc;           // MVP matrix for light source
+    GLuint lightColorLoc;
+    sgct_utils::SGCTSphere *lightSource;
+    glm::vec4 lightSourceColor;
 
     // Time, delta time and acceleration for our simulation
     float t;

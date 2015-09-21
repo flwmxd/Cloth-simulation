@@ -23,7 +23,7 @@ public:
     // Constructors
     Mesh() { };
     Mesh(unsigned int, float, glm::vec3);
-    Mesh(unsigned int, float, glm::vec3, std::string);
+    Mesh(unsigned int, float, glm::vec3, std::string, std::string);
 
     // Member functions
     void addKnot(Knot *, unsigned int);
@@ -38,6 +38,11 @@ public:
     glm::vec3 computeVertexNormal(std::vector<unsigned int>);
     void createVertexNormalsList();
     void createUVs();
+    void computeTangentBasis(std::vector<glm::vec3>&,
+                             std::vector<glm::vec2>&,
+                             std::vector<glm::vec3>&,
+                             std::vector<glm::vec3>&,
+                             std::vector<glm::vec3>&);
 
     // Functions that updates data for OpenGL every frame
     void updateVertices();
@@ -94,6 +99,7 @@ private:
     glm::vec3 position;
     float size;
     std::string textureName;
+    std::string normalMapName;
 
     // Data for OpenGl
     std::vector<glm::vec3> mVertices;
@@ -102,13 +108,18 @@ private:
     std::vector<glm::vec3> mVertexNormals;
     std::vector<glm::vec2> mUvs;
     std::vector<glm::vec3> mColors;
+    std::vector<glm::vec3> mTangents;
+    std::vector<glm::vec3> mBitangents;
     std::vector<sgct_utils::SGCTSphere *> points;
 
+    // VAOs and VBOs
     GLuint vertexArray;
     GLuint vertexPositionBuffer;
     GLuint normalCoordBuffer;
     GLuint vertexColorBuffer;
     GLuint texCoordBuffer;
+    GLuint tangentBuffer;
+    GLuint bitangentBuffer;
 
     // Shader data
     GLint MVPLoc;           // MVP matrix
@@ -121,6 +132,7 @@ private:
     GLint lightDifLoc;      // Diffuse light
     GLint lightSpeLoc;      // Specular light
     GLint specularityLoc;   // Specular constant
+    GLuint knotColorLoc;    // Color on knots, for debuging
 
     // Material data
     glm::vec4 ambient;
@@ -128,7 +140,10 @@ private:
     glm::vec4 specular;
     float specularity;
 
+    glm::vec4 knotColor;
+
     size_t texHandle;
+    size_t normalMapHandle;
 };
 
 #endif // MESH_H

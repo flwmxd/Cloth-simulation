@@ -17,8 +17,8 @@ Mesh::Mesh(unsigned int n, float k, glm::vec3 p)
 }
 
 
-Mesh::Mesh(unsigned int n, float k, glm::vec3 p, std::string t) 
-    : numKnots(n), knotSpacing(k), position(p), textureName(t) {
+Mesh::Mesh(unsigned int n, float k, glm::vec3 p, std::string t, std::string nM) 
+    : numKnots(n), knotSpacing(k), position(p), textureName(t), normalMapName(nM) {
 
     size = std::floor(static_cast<float>(n) / 2.0f) * k;
     std::cout << "size: " << size << std::endl;
@@ -30,6 +30,7 @@ Mesh::Mesh(unsigned int n, float k, glm::vec3 p, std::string t)
     createVertexNormals();
     createColorVector(glm::vec3(1.0f, 0.0f, 0.0f));
     createUVs();
+    computeTangentBasis(mVertices, mUvs, mVertexNormals, mTangents, mBitangents);
 }
 
 
@@ -301,27 +302,6 @@ void Mesh::createVertexNormalsList() {
 
 void Mesh::createUVs() {
 
- /*   unsigned int row = 0;
-
-    // FIX THIS SHIT, TOOOO MAAAANNNYYYY!!!
-
-    for(int i = 0; i < numKnots; i++) {
-        for(int j = 0; j < numKnots; j++) {
-            //if((i+1)%numKnots != 0 || i == 0) {
-            
-            // Face 1
-            mUvs.push_back(glm::vec2(static_cast<float>(i) / static_cast<float>(numKnots), static_cast<float>(j) / static_cast<float>(numKnots)));
-            mUvs.push_back(glm::vec2(static_cast<float>(i+1) / static_cast<float>(numKnots), static_cast<float>(j+1) / static_cast<float>(numKnots)));
-            mUvs.push_back(glm::vec2(static_cast<float>(i) / static_cast<float>(numKnots), static_cast<float>(j+1) / static_cast<float>(numKnots)));
-
-            // Face 2
-            mUvs.push_back(glm::vec2(static_cast<float>(i) / static_cast<float>(numKnots), static_cast<float>(j) / static_cast<float>(numKnots)));
-            mUvs.push_back(glm::vec2(static_cast<float>(i+1) / static_cast<float>(numKnots), static_cast<float>(j) / static_cast<float>(numKnots)));
-            mUvs.push_back(glm::vec2(static_cast<float>(i+1) / static_cast<float>(numKnots), static_cast<float>(j+1) / static_cast<float>(numKnots)));
-        //}
-        }
-    }
-*/
     float d_uv = 1.0f / static_cast<float>(numKnots-1);
     unsigned int row = 0, col = 0;
 
@@ -343,19 +323,50 @@ void Mesh::createUVs() {
         if((i+1)%(numKnots) == 0 ) {
             row++;
             col = 0;
-            //std::cout << "i: " << i << std::endl;
         }
     }
+}
 
-    unsigned int indx = 0;
-    for(std::vector<glm::vec2>::iterator it = mUvs.begin(); it != mUvs.end(); ++it) {
-        std::cout << "UV " << indx << " : (" << (*it).x << ", " << (*it).y << ")" << std::endl;
-        indx++;
+
+void Mesh::computeTangentBasis(std::vector<glm::vec3> &vertices,
+                               std::vector<glm::vec2> &uvs,
+                               std::vector<glm::vec3> &normals,
+                               std::vector<glm::vec3> &tangents,
+                               std::vector<glm::vec3> &bitangents) {
+
+    for(unsigned int i = 0; i < vertices.size(); i += 3) {
+
+        // Shortcuts for vertices
+        glm::vec3 &v0 = vertices[i + 0];
+        glm::vec3 &v1 = vertices[i + 1];
+        glm::vec3 &v2 = vertices[i + 2];
+
+        // Shortcut for UVs
+        glm::vec2 &uv0 = uvs[i + 0];
+        glm::vec2 &uv1 = uvs[i + 1];
+        glm::vec2 &uv2 = uvs[i + 2];
+
+        // Edges of the triangle
+        glm::vec3 deltaPos1 = v1 - v0;
+        glm::vec3 deltaPos2 = v2 - v0;
+
+        // UV delta
+        glm::vec2 deltaUV1 = uv1 - uv0;
+        glm::vec2 deltaUV2 = uv2 - uv0;
+
+        float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+
+        glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+        glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+        tangents.push_back(tangent);
+        tangents.push_back(tangent);
+        tangents.push_back(tangent);
+
+        bitangents.push_back(bitangent);
+        bitangents.push_back(bitangent);
+        bitangents.push_back(bitangent);
     }
-
-    std::cout << std::endl << "mUvs.size(): " << mUvs.size() << std::endl;
-    std::cout << "mVertices.size(): " << mVertices.size() << std::endl;
-
 }
 
 
@@ -509,18 +520,24 @@ void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::
     updateFaceNormals();
     updateVertexNormals();
     updateVertexNormalsList();
+    //mTangents.clear();
+    //mBitangents.clear();
+    //computeTangentBasis(mVertices, mUvs, mVertexNormals, mTangents, mBitangents);
 
     // Material properties
     ambient = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
     diffuse = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
     specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    specularity = 40.0f;
+    specularity = 10.0f;
 
     // Disable back face culling, since we want both sides of the cloth to be visible
     glDisable(GL_CULL_FACE);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureByHandle(texHandle));
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureByHandle(normalMapHandle));
 
     sgct::ShaderManager::instance()->bindShaderProgram("cloth_plain");
 
@@ -573,6 +590,7 @@ void Mesh::drawKnots(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::ma
         sgct::ShaderManager::instance()->bindShaderProgram("knots");
 
         glUniformMatrix4fv(MVPLocKnots, 1, GL_FALSE, &tmpMVP[0][0]);
+        glUniform4f(knotColorLoc, knotColor.r, knotColor.g, knotColor.b, knotColor.a);
 
         (*it)->draw();
 
@@ -593,6 +611,8 @@ void Mesh::initKnotDrawing(glm::vec3 lightPos) {
 
     std::cout << "Initializing knot drawing" << std::endl;
 
+    knotColor = glm::vec4(0.8, 0.3, 0.3, 1.0);
+
     sgct::ShaderManager::instance()->addShaderProgram(
         "knots", 
         "shaders/knot.vert",
@@ -600,7 +620,8 @@ void Mesh::initKnotDrawing(glm::vec3 lightPos) {
 
     sgct::ShaderManager::instance()->bindShaderProgram("knots");
 
-    MVPLocKnots = sgct::ShaderManager::instance()->getShaderProgram("knots").getUniformLocation("MVP");
+    MVPLocKnots  = sgct::ShaderManager::instance()->getShaderProgram("knots").getUniformLocation("MVP");
+    knotColorLoc = sgct::ShaderManager::instance()->getShaderProgram("knots").getUniformLocation( "in_color" );
 
     std::cout << "shaders/knot.vert loaded" << std::endl;
     std::cout << "shaders/knot.frag loaded" << std::endl;
@@ -617,6 +638,7 @@ void Mesh::initSurface(glm::vec3 lightPos) {
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
     sgct::TextureManager::instance()->loadTexure(texHandle, textureName,  "./textures/" + textureName + ".png", true);
+    sgct::TextureManager::instance()->loadTexure(normalMapHandle, normalMapName,  "./textures/normalmaps/" + normalMapName + ".png", true);
 
     sgct::ShaderManager::instance()->addShaderProgram(
         "cloth_plain",
@@ -625,22 +647,24 @@ void Mesh::initSurface(glm::vec3 lightPos) {
 
     sgct::ShaderManager::instance()->bindShaderProgram("cloth_plain");
 
-    MVPLoc          = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MVP" );
-    GLint TexLoc    = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "Tex" );
-    MVLoc           = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MV" );
-    MVLightLoc      = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MVLight" );
-    NMLoc           = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "normalMatrix" );
-    lightPosLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightPos" );
-    lightAmbLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightAmbient" );
-    lightDifLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightDiffuse" );
-    lightSpeLoc     = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightSpecular" );
-    specularityLoc  = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "specularity" );
+    MVPLoc              = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MVP" );
+    GLint TexLoc        = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "Tex" );
+    GLint NormalMapLoc  = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "NormalMap" );
+    MVLoc               = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MV" );
+    MVLightLoc          = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "MVLight" );
+    NMLoc               = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "normalMatrix" );
+    lightPosLoc         = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightPos" );
+    lightAmbLoc         = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightAmbient" );
+    lightDifLoc         = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightDiffuse" );
+    lightSpeLoc         = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightSpecular" );
+    specularityLoc      = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "specularity" );
 
     std::cout << "shaders/cloth_plain.vert loaded" << std::endl;
     std::cout << "shaders/cloth_plain.frag loaded" << std::endl;
 
     // Setup uniforms for shaders
     glUniform1i(TexLoc, 0);
+    glUniform1i(NormalMapLoc, 1);
     glUniform4f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z, 1.0f);
 
     // Unbind the shaders
@@ -687,8 +711,34 @@ void Mesh::initSurface(glm::vec3 lightPos) {
     glBufferData(GL_ARRAY_BUFFER, mUvs.size() * sizeof(glm::vec2), &mUvs[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(
-        2,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
+        2,                  // attribute 2. No particular reason for 1, but must match the layout in the shader.
         2,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        reinterpret_cast<void*>(0) // array buffer offset
+    );
+
+    glGenBuffers(1, &tangentBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, tangentBuffer);
+    glBufferData(GL_ARRAY_BUFFER, mTangents.size() * sizeof(glm::vec3), &mTangents[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(
+        3,                  // attribute 3. No particular reason for 1, but must match the layout in the shader.
+        3,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        reinterpret_cast<void*>(0) // array buffer offset
+    );
+
+    glGenBuffers(1, &bitangentBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, bitangentBuffer);
+    glBufferData(GL_ARRAY_BUFFER, mBitangents.size() * sizeof(glm::vec3), &mBitangents[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(
+        4,                  // attribute 3. No particular reason for 1, but must match the layout in the shader.
+        3,                  // size
         GL_FLOAT,           // type
         GL_FALSE,           // normalized?
         0,                  // stride
@@ -813,7 +863,7 @@ void Mesh::setup2() {
     unsigned int indx = 0;
 
     glm::vec3 init_pos = knots.back()->getInitialPosition();
-    float x = init_pos.x;
+    float x = -init_pos.x;
     float y = init_pos.y;
     float z = -((numKnots - 1.0f) * knotSpacing);
 
@@ -825,11 +875,11 @@ void Mesh::setup2() {
         //(*it)->setForce(glm::vec3(init_force.x*0.5, init_force.y*0.5, init_force.z*0.5));
         (*it)->setForceDamping(0.75f);
         (*it)->setMass(0.6f);
-        x -= knotSpacing;
+        x += knotSpacing;
 
         if((indx + 1)%numKnots == 0 && indx > 0) {
             z += knotSpacing;
-            x = init_pos.x;
+            x = -init_pos.x;
         }
         indx++;
     }

@@ -14,6 +14,8 @@ in vec3 light_dir;
 
 out vec4 color;
 
+vec3 lightDir = vec3(1.0, 1.0, 1.0);
+
 vec4 calcShading( vec3 N, vec3 L )
 {
     //Ambient contribution
@@ -23,15 +25,23 @@ vec4 calcShading( vec3 N, vec3 L )
     vec4 Idiff = lightDiffuse * max(dot(N,L), 0.0);
     Idiff = clamp(Idiff, 0.0, 1.0);
 
+    return Iamb + Idiff;
+}
+
+vec4 calcSpecularShading( vec3 N, vec3 L ) {
+
     //Specular contribution
-    vec3 E = normalize(-v);
-    vec3 R = normalize(reflect(-L, N));
+    vec3 v_dir = normalize(-v);
+    vec3 R = normalize(reflect(-L, normalize(N)));
     const float specExp = 10.0;
+    float spec = dot(R, v_dir);
+    spec = (spec > 0.0) ? (1.0 * pow(spec, specExp)) : 0.0;
+
     vec4 Ispec = lightSpecular
-        * pow(max(dot(R,E),0.0), specExp);
+        * spec;
     Ispec = clamp(Ispec, 0.0, 1.0);
 
-    return Iamb + Idiff + Ispec;
+    return Ispec;
 }
 
 void main()
@@ -40,5 +50,6 @@ void main()
     
     // Ugly hack for the checkered floor
     color.rgb = (color.r > 0.5) ? vec3(1.0, 1.0, 1.0) : vec3(0.0, 0.0, 0.0);
-    color.rgb *= calcShading(normalize(normalMatrix * normal), light_dir).rgb;
+    color.rgb *= calcShading(normalize(normalMatrix * normal), light_dir).rgb * 1.0;
+    color.rgb += calcSpecularShading(normalize(normalMatrix * normal), light_dir).rgb;
 }

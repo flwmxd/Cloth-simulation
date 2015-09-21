@@ -1,7 +1,7 @@
 #include "scene.h"
 
 Scene::Scene() {
-    lightPosition = glm::vec3(0.0f, 10.0f, -25.0f);
+    lightPosition = glm::vec3(0.0f, 25.0f, 25.0f);
 }
 
 void Scene::addBody(Body * b) {
@@ -11,6 +11,8 @@ void Scene::addBody(Body * b) {
 
 void Scene::init() {
 
+    lightSourceColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     //Set up backface culling
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW); //our polygon winding is counter clockwise
@@ -19,6 +21,31 @@ void Scene::init() {
     //std::cout << "init the scene" << std::endl;
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it)
         (*it)->getShape()->init(this->lightPosition);
+
+    initLightSource();
+}
+
+
+void Scene::initLightSource() {
+
+    std::cout << "Initializing light source drawing" << std::endl;
+
+    lightSource = new sgct_utils::SGCTSphere(0.2f, 5);
+
+    sgct::ShaderManager::instance()->addShaderProgram(
+        "knots", 
+        "shaders/knot.vert",
+        "shaders/knot.frag");
+
+    sgct::ShaderManager::instance()->bindShaderProgram("knots");
+
+    MVPLightLoc   = sgct::ShaderManager::instance()->getShaderProgram("knots").getUniformLocation("MVP");
+    lightColorLoc = sgct::ShaderManager::instance()->getShaderProgram("knots").getUniformLocation( "in_color" );
+
+    std::cout << "shaders/knot.vert loaded" << std::endl;
+    std::cout << "shaders/knot.frag loaded" << std::endl;
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
 }
 
 
@@ -41,7 +68,7 @@ void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 
 
     // Create some matrices needed for our shapes draw functions
     glm::mat4 MVP       = activeMVPMatrix * scene_mat * cameraRotation;
-    glm::mat4 MV        = activeMVMatrix * scene_mat;
+    glm::mat4 MV        = activeMVMatrix * scene_mat * cameraRotation;
     glm::mat4 MV_light  = activeMVMatrix;
     glm::mat3 NM        = glm::inverseTranspose(glm::mat3(MV));
 
@@ -49,9 +76,27 @@ void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it)
         (*it)->getShape()->draw(MVP, MV, MV_light, NM, drawType);
 
+    drawLightSource(MVP);
+
     glDisable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
+}
+
+
+void Scene::drawLightSource(glm::mat4 MVP) {
+
+    glm::mat4 scene_mat = glm::translate(glm::mat4(1.0f), this->lightPosition);
+    glm::mat4 MVP_l = MVP * scene_mat;
+
+    sgct::ShaderManager::instance()->bindShaderProgram("knots");
+
+    glUniformMatrix4fv(MVPLightLoc, 1, GL_FALSE, &MVP_l[0][0]);
+    glUniform4f(lightColorLoc, lightSourceColor.r, lightSourceColor.g, lightSourceColor.b, lightSourceColor.a);
+
+    lightSource->draw();
+
+    sgct::ShaderManager::instance()->unBindShaderProgram();
 }
 
 

@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 void init() {
 
     // Create our cloth mesh
-    cloth = new Body(new Mesh(33, 0.5f, glm::vec3(0.0f, 7.0f, 0.0f), "kappa"));
+    cloth = new Body(new Mesh(33, 0.5f, glm::vec3(0.0f, 7.0f, 0.0f), "hestens_seng", "box"));
     //cloth->getShape()->setup1();
     cloth->getShape()->setBodyStatic(1056);
     cloth->getShape()->setBodyStatic(1064);
@@ -106,7 +106,7 @@ void init() {
 
 void draw() {
     scene->setTime(static_cast<float>(curr_time.getVal()));
-    scene->setDt(gEngine->getDt() / simulations_per_frame);
+    scene->setDt(gEngine->getDt() / static_cast<float>(simulations_per_frame));
     
     if(play_pause) {
         for(unsigned int i = 0; i < simulations_per_frame; i++) {
