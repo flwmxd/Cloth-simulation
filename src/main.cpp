@@ -1,5 +1,5 @@
 #include <string>
-//#include "sgct.h"
+#include <math.h>
 #include "scene.h"
 #include "mesh.h"
 #include "floor.h"
@@ -32,15 +32,20 @@ double mouseXPos[] = { 0.0, 0.0 };
 // Toggle draw functions
 unsigned int drawType = 0;
 
+// Play or pause animation
 bool play_pause = false;
 
-unsigned int simulations_per_frame = 20;
+// Wind or not?
+bool wind = false;
 
-glm::vec3 view(0.0f, 0.0f, 1.0f);
+// How many simualtions per frame
+const unsigned int simulations_per_frame = 20;
 
+// Camera rotation
 sgct::SharedObject<glm::mat4> cameraRot;
 
-float rotationSpeed = 0.2f;
+// How fast shall the camera rotation be?
+const float rotationSpeed = 0.2f;
 
 // If time is required
 sgct::SharedDouble curr_time(0.0);
@@ -80,23 +85,27 @@ int main(int argc, char* argv[]) {
 void init() {
 
     // Create our cloth mesh
-    cloth = new Body(new Mesh(33, 0.5f, glm::vec3(0.0f, 7.0f, 0.0f), "hestens_seng", "box"));
-    //cloth->getShape()->setup1();
+    cloth = new Body(new Mesh(33,                           // Number of knots in vertical and horizintal direction
+                              0.5f,                         // Spacing between knots points
+                              glm::vec3(0.0f, 7.0f, 0.0f),  // Position of mesh center point
+                              "kappa",               // Texture
+                              "fabric_normal"));            // Normalmap
+
+    // Set some knot points static, we dont want the whole peice to fall
     cloth->getShape()->setBodyStatic(1056);
     cloth->getShape()->setBodyStatic(1064);
     cloth->getShape()->setBodyStatic(1072);
     cloth->getShape()->setBodyStatic(1080);
     cloth->getShape()->setBodyStatic(1088);
-    /*cloth->getShape()->setBodyStatic(42);
-    cloth->getShape()->setBodyStatic(45);
-    cloth->getShape()->setBodyStatic(48);*/
+
+    // Add the cloth to our scene
     scene->addBody(cloth);
 
-
-    //sphere = new Body(new Sphere(2.0f, glm::vec3(0.0f, 0.0f, 3.0f)));
+    // Add a collision sphere, doesn't work correctly
+    //sphere = new Body(new Sphere(4.0f, glm::vec3(0.0f, 0.0f, 5.0f)));
     //scene->addBody(sphere);
 
-    // Create a floor for some orientation help
+    // Create a checkered floor for some orientation help
     floor_ = new Body(new Floor(glm::vec3(0.0f, -3.0f, 0.0f), 30.0f, "checker"));
     scene->addBody(floor_);
     
@@ -105,15 +114,18 @@ void init() {
 
 
 void draw() {
+    // Set current time and step size for the simulation
     scene->setTime(static_cast<float>(curr_time.getVal()));
     scene->setDt(gEngine->getDt() / static_cast<float>(simulations_per_frame));
     
+    // Step the simulation one time step forward if it is not paused
     if(play_pause) {
         for(unsigned int i = 0; i < simulations_per_frame; i++) {
             scene->step();
         }
     }
 
+    // Draw the scene with the current scene matrices
     scene->draw(gEngine->getActiveModelViewProjectionMatrix(), gEngine->getActiveModelViewMatrix(), cameraRot.getVal(), drawType);
 }
 
@@ -141,8 +153,7 @@ void preSync() {
             panRot,
             glm::vec3(0.0f, 1.0f, 0.0f)); //rotation around the y-axis
 
-        // Some camera interaction matrices, make the camera
-        // rotate around the scene
+        // Some camera interaction matrices, make the camera rotate around the scene
         glm::mat4 result = ViewRotateX;
         result *= glm::translate( glm::mat4(1.0f), sgct::Engine::getUserPtr()->getPos() );
         result *= glm::translate( glm::mat4(1.0f), -sgct::Engine::getUserPtr()->getPos() );
@@ -182,6 +193,7 @@ void keyCallback(int key, int action)
                 scene->reset();
             break;
 
+        // Controls for collision sphere
         case SGCT_KEY_W:
             sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(0.0f, 0.0f, -0.2f));
             break;
@@ -206,16 +218,31 @@ void keyCallback(int key, int action)
             sphere->getShape()->setPosition(sphere->getShape()->getPosition() + glm::vec3(0.0f, 0.2f, 0.0f));
             break;
 
+        // Load setup 1 for the cloth
         case SGCT_KEY_1:
             if(action == SGCT_PRESS)
                 cloth->getShape()->setup1();
             break;
 
+        // Load setup 2 for the cloth
         case SGCT_KEY_2:
             if(action == SGCT_PRESS)
                 cloth->getShape()->setup2();
             break;
 
+        // Load setup 3 for the cloth
+        case SGCT_KEY_3:
+            if(action == SGCT_PRESS)
+                cloth->getShape()->setup3();
+            break;
+
+        // Load setup 4 for the cloth
+        case SGCT_KEY_4:
+            if(action == SGCT_PRESS)
+                cloth->getShape()->setup4();
+            break;
+
+        // Play or pause the simulation
         case SGCT_KEY_C:
             if(action == SGCT_PRESS) {
                 if(play_pause)
@@ -223,6 +250,30 @@ void keyCallback(int key, int action)
                 else
                     play_pause = true;
             }
+            break;
+
+        // Toggle wind force
+        case SGCT_KEY_Z:
+            if (action == SGCT_PRESS) {
+                if(!wind) {
+                    cloth->getShape()->setWindForce(glm::vec3(0.0f, 0.0f, (sin(curr_time.getVal()) + 0.0) / 20.0f ));
+                    wind = true;
+                } else {
+                    cloth->getShape()->setWindForce(glm::vec3(0.0f, 0.0f, 0.0f));
+                    wind = false;
+                }
+            }
+            break;
+
+        case SGCT_KEY_UP:
+            if(action == SGCT_PRESS)
+                cloth->getShape()->setBumpyness(0.05f);
+            break;
+
+        case SGCT_KEY_DOWN:
+            if(action == SGCT_PRESS)
+                cloth->getShape()->setBumpyness(-0.05f);
+            break;
         }
     }
 }
@@ -245,4 +296,5 @@ void mouseButtonCallback(int button, int action) {
 
 void cleanUp() {
     delete scene;
+    delete cloth;
 }

@@ -53,6 +53,8 @@ public:
     // Some initial setups for the mesh
     void setup1();
     void setup2();
+    void setup3();
+    void setup4();
 
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int);
     void drawSurface(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);
@@ -75,17 +77,13 @@ public:
     std::vector<Knot *> getKnots() { return this->knots; };
     
     // Setters
-    void setBodyStatic(int);
+    void setBodyStatic(int index) { knots[index]->setStatic(); };
+    void setBodyNonStatic(int index) { knots[index]->setNonStatic(); }
+    void setAllBodiesNonStatic();
     void setWindForce(glm::vec3);
     void setPosition(glm::vec3 p) { position = p; };
-    void setTexture(std::string t) { 
-        textureName = t;
-        sgct::TextureManager::instance()->loadTexure(
-            texHandle, 
-            textureName, 
-            "./textures/" + textureName + ".png",
-            true);
-    };
+    void setTexture(unsigned int);
+    void setBumpyness(float b) { bumpyness += b; };
 
     // Debug functions
     void debugMesh();
@@ -132,6 +130,7 @@ private:
     GLint lightDifLoc;      // Diffuse light
     GLint lightSpeLoc;      // Specular light
     GLint specularityLoc;   // Specular constant
+    GLint bumpynessLoc;     // Bumpyness
     GLuint knotColorLoc;    // Color on knots, for debuging
 
     // Material data
@@ -139,6 +138,7 @@ private:
     glm::vec4 diffuse;
     glm::vec4 specular;
     float specularity;
+    float bumpyness;
 
     glm::vec4 knotColor;
 

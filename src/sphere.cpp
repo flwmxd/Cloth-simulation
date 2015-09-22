@@ -4,7 +4,7 @@ Sphere::Sphere(float r, glm::vec3 p, glm::vec3 v)
     : radius(r), position(p), initial_position(p), velocity(v) {
 
     _isStatic = false;
-    obj_mesh = new sgct_utils::SGCTSphere(r, 20);
+    obj_mesh = new sgct_utils::SGCTSphere(r * 0.9f, 20);
 
 }
 
@@ -55,18 +55,23 @@ void Sphere::reset() {
 void Sphere::resolveCollision(Knot *k) {
 
     // Do we have a collision between a sphere and a mesh knot?
-    if(glm::length(k->getPosition() - position) <= radius) {
+    if(glm::length(k->getPosition() - position) < radius) {
 
-        std::cout << "Collision between sphere and knot: " << k->getIndex() << std::endl;
+        //std::cout << "Collision between sphere and knot: " << k->getIndex() << std::endl;
 
         glm::vec3 intersection_normal = glm::normalize(k->getPosition() - position);
         float dist = radius - glm::length(-k->getPosition() + position);
 
         glm::vec3 pos = k->getPosition();
 
-        pos += dist * intersection_normal * 1.0f;
+        //if(intersection_normal.y < 0.0)
+            //intersection_normal.y = 2.5;
+
+        pos += dist * intersection_normal;
 
         k->setPosition(pos);
+        k->setForce(k->getForce() + intersection_normal);
+        
     }
 }
 

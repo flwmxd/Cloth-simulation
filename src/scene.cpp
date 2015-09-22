@@ -32,11 +32,6 @@ void Scene::initLightSource() {
 
     lightSource = new sgct_utils::SGCTSphere(0.2f, 5);
 
-    sgct::ShaderManager::instance()->addShaderProgram(
-        "knots", 
-        "shaders/knot.vert",
-        "shaders/knot.frag");
-
     sgct::ShaderManager::instance()->bindShaderProgram("knots");
 
     MVPLightLoc   = sgct::ShaderManager::instance()->getShaderProgram("knots").getUniformLocation("MVP");
@@ -113,7 +108,7 @@ void Scene::checkCollisions() {
 
     for(std::vector<Body *>::iterator body_it = bodies.begin(); body_it != bodies.end(); ++body_it) {
         for(std::vector<Knot *>::iterator knot_it = mesh_knots.begin(); knot_it != mesh_knots.end(); ++knot_it) {
-            // if a shape is not the cloth we want to check collisions
+            // if a shape is not the cloth, we want to check collisions
             if((*body_it)->getShape()->getType() != 0) {
                 (*body_it)->getShape()->resolveCollision((*knot_it));
             }
@@ -123,7 +118,8 @@ void Scene::checkCollisions() {
 
 
 void Scene::step() {
-    //checkCollisions();
+    
+    checkCollisions();
     applyG();
     applySpringForce();
     integrateVelocities();

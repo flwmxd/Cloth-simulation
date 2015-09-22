@@ -9,8 +9,6 @@
  *  This is an abstract class for all shapes that are supported
  */
 
- // FIX THE VIRTUAL FUNCTIONS IN SUB-CLASSES
-
 class Body;
 
 class Shape {
@@ -30,12 +28,16 @@ public:
     virtual std::vector<Knot *> getKnots() { std::vector<Knot *>temp; return temp; };
 
     virtual void setBodyStatic(int) = 0;
+    virtual void setBodyNonStatic(int) {};
     virtual void setWindForce(glm::vec3) {};
     virtual void setPosition(glm::vec3) = 0;
     virtual void setTexture(std::string) {};
+    virtual void setBumpyness(float) {};
     
     virtual void setup1() {};
     virtual void setup2() {};
+    virtual void setup3() {};
+    virtual void setup4() {};
 
     Body * body;
 

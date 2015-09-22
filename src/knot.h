@@ -56,6 +56,7 @@ public:
     // Setters
     void setIndex(unsigned int i) { this->index = i; };
     void setStatic() { _isStatic = true; };
+    void setNonStatic() {_isStatic = false; };
     void setMass(float m) { this->mass = m; };
     void setPosition(glm::vec3 p) { this->position = p; };
     void setForce(glm::vec3 f) { this->force = f; };

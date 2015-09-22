@@ -5,6 +5,7 @@ Knot::Knot(glm::vec3 p, float l, bool is)
 
     velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     force = glm::vec3(0.0f, 0.0f, 0.0f);
+    wind = glm::vec3(0.0f, 0.0f, 0.0f);
     force_damping = 0.75f;
     mass = 0.6f;
 };
@@ -44,13 +45,12 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
     // No need to calculate forces on the static knots
     if(!_isStatic) {
 
-        //glm::vec3 f_int(0.0f, 0.0f, 0.0f);
         glm::vec3 delta_p;
         glm::vec3 delta_p_hat;
         glm::vec3 delta_v;
         glm::vec3 f;
 
-        float k = 500.0f;
+        float k = 600.0f;
         float b = 30.0f;
         float l = springLength;
         float l_diag = sqrt(l*l + l*l);
@@ -67,8 +67,8 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
 
             f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
             f += -0.1f * this->velocity;
-            (*it)->addForce(-f);
-            this->force += f;
+            (*it)->addForce(-f + this->wind);
+            this->force += f + this->wind;
         }
 
 
@@ -86,7 +86,6 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
             this->force += f;
         }
 
-
         for(std::vector<Knot *>::iterator it = flexNeighbors.begin(); it != flexNeighbors.end(); ++it) {
             //neighborStretch += SPRING_CONSTANT * (glm::length(position - (*it)->getPosition()) - DIAG_SPRING);
             delta_v = this->velocity - (*it)->getVelocity();
@@ -100,8 +99,6 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
             (*it)->addForce(-f);
             this->force += f;
         }
-
-       // std::cout << std::endl << std::endl;
     }
 }
 

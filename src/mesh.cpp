@@ -31,6 +31,13 @@ Mesh::Mesh(unsigned int n, float k, glm::vec3 p, std::string t, std::string nM)
     createColorVector(glm::vec3(1.0f, 0.0f, 0.0f));
     createUVs();
     computeTangentBasis(mVertices, mUvs, mVertexNormals, mTangents, mBitangents);
+
+    // Material properties
+    ambient = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
+    diffuse = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+    specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    specularity = 2.0f;
+    bumpyness = 0.2;
 }
 
 
@@ -98,7 +105,7 @@ void Mesh::createKnotNeighbors() {
             (*it)->addDiagNeighbor(*(it + numKnots - 1));
 
         // Add knot 2 steps right
-        if(((index + 2)%numKnots != 0 && (index + 1)%numKnots != 0) || index == 0) {
+        if(((index + 2)%numKnots != 0 &&(index + 1)%numKnots != 0) || index == 0) {
             (*it)->addFlexNeighbor(*(it + 2));
             //std::cout << index << "\t";
         }
@@ -376,7 +383,7 @@ void Mesh::updateVertices() {
 
     for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end() - (numKnots + 1); ++it) {
         
-        if(((*it)->getIndex() + 1)%numKnots != 0 || (*it)->getIndex() == 0) {
+        if(((*it)->getIndex() + 1)%numKnots != 0 ||(*it)->getIndex() == 0) {
 
             mVertices[indx] = (*it)->getPosition();
             mVertices[indx + 1] = (*(it + numKnots + 1))->getPosition();
@@ -524,12 +531,6 @@ void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::
     //mBitangents.clear();
     //computeTangentBasis(mVertices, mUvs, mVertexNormals, mTangents, mBitangents);
 
-    // Material properties
-    ambient = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
-    diffuse = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
-    specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    specularity = 10.0f;
-
     // Disable back face culling, since we want both sides of the cloth to be visible
     glDisable(GL_CULL_FACE);
 
@@ -549,6 +550,7 @@ void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::
     glUniform4f(lightDifLoc, diffuse.r, diffuse.g, diffuse.b, diffuse.a);
     glUniform4f(lightSpeLoc, specular.r, specular.g, specular.b, specular.a);
     glUniform1f(specularityLoc, specularity);
+    glUniform1f(bumpynessLoc, bumpyness);
 
     // Rebind the buffer data, since our vertices are now updated
     glBindVertexArray(vertexArray);
@@ -631,10 +633,10 @@ void Mesh::initKnotDrawing(glm::vec3 lightPos) {
 
 
 void Mesh::initSurface(glm::vec3 lightPos) {
-    // TODO
+
     std::cout << "Initializing mesh" << std::endl;
 
-    // Load texture
+    // Load textures
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
     sgct::TextureManager::instance()->setCompression(sgct::TextureManager::S3TC_DXT);
     sgct::TextureManager::instance()->loadTexure(texHandle, textureName,  "./textures/" + textureName + ".png", true);
@@ -658,6 +660,7 @@ void Mesh::initSurface(glm::vec3 lightPos) {
     lightDifLoc         = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightDiffuse" );
     lightSpeLoc         = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "lightSpecular" );
     specularityLoc      = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "specularity" );
+    bumpynessLoc        = sgct::ShaderManager::instance()->getShaderProgram("cloth_plain").getUniformLocation( "bumpyness" );
 
     std::cout << "shaders/cloth_plain.vert loaded" << std::endl;
     std::cout << "shaders/cloth_plain.frag loaded" << std::endl;
@@ -808,8 +811,9 @@ void Mesh::debugMesh() {
 }
 
 
-void Mesh::setBodyStatic(int index) {
-    knots[index]->setStatic();
+void Mesh::setAllBodiesNonStatic() {
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it)
+        (*it)->setNonStatic();
 }
 
 
@@ -823,6 +827,14 @@ void Mesh::setWindForce(glm::vec3 w_f) {
 void Mesh::setup1() {
     
     std::cout << "Loading setup 1 ..." << std::endl;
+
+    setAllBodiesNonStatic();
+
+    setBodyStatic(1056);
+    setBodyStatic(1064);
+    setBodyStatic(1072);
+    setBodyStatic(1080);
+    setBodyStatic(1088);
 
     // Reset the mesh, i.e. positions, velocities and forces.
     reset();
@@ -848,7 +860,7 @@ void Mesh::setup1() {
         }
         indx++;
     }
-
+    std::cout << std::endl;
     std::cout << "Setup 1 loaded." << std::endl;
 }
 
@@ -856,6 +868,14 @@ void Mesh::setup1() {
 void Mesh::setup2() {
 
     std::cout << "Loading setup 2 ..." << std::endl;
+
+    setAllBodiesNonStatic();
+
+    setBodyStatic(1056);
+    setBodyStatic(1064);
+    setBodyStatic(1072);
+    setBodyStatic(1080);
+    setBodyStatic(1088);
 
     // Reset the mesh, i.e. positions, velocities and forces.
     reset();
@@ -883,8 +903,117 @@ void Mesh::setup2() {
         }
         indx++;
     }
-
+    std::cout << std::endl;
     std::cout << "Setup 2 loaded." << std::endl;
+}
+
+
+void Mesh::setup3() {
+
+    std::cout << "Loading setup 3 ..." << std::endl;
+
+    setAllBodiesNonStatic();
+
+    // Side 1
+    setBodyStatic(0);
+    setBodyStatic(8);
+    setBodyStatic(16);
+    setBodyStatic(24);
+    setBodyStatic(32);
+
+    // Sida 2
+    setBodyStatic(264);
+    setBodyStatic(528);
+    setBodyStatic(792);
+
+    // Sida 3
+    setBodyStatic(1056);
+    setBodyStatic(1064);
+    setBodyStatic(1072);
+    setBodyStatic(1080);
+    setBodyStatic(1088);
+
+    // Sida 4
+    setBodyStatic(296);
+    setBodyStatic(560);
+    setBodyStatic(824);
+
+    // Reset the mesh, i.e. positions, velocities and forces.
+    reset();
+
+    unsigned int indx = 0;
+
+    glm::vec3 init_pos = knots.back()->getInitialPosition();
+    float x = -init_pos.x;
+    float y = init_pos.y / 2.0;
+    float z = ((numKnots - 1.0f) * knotSpacing) / 2.0;
+
+    // Give all knots new positions
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
+
+        (*it)->setPosition(glm::vec3(x, y, z));
+        glm::vec3 init_force = (*it)->getForce();
+        //(*it)->setForce(glm::vec3(init_force.x*0.5, init_force.y*0.5, init_force.z*0.5));
+        (*it)->setForceDamping(0.75f);
+        (*it)->setMass(0.6f);
+        x += knotSpacing;
+
+        if((indx + 1)%numKnots == 0 && indx > 0) {
+            z -= knotSpacing;
+            x = -init_pos.x;
+        }
+        indx++;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Setup 3 loaded." << std::endl;
+}
+
+
+void Mesh::setup4() {
+
+    std::cout << "Loading setup 4 ..." << std::endl;
+
+    setAllBodiesNonStatic();
+
+    setBodyStatic(0);
+    setBodyStatic(32);
+    setBodyStatic(1056);
+    setBodyStatic(1088);
+
+    // Reset the mesh, i.e. positions, velocities and forces.
+    reset();
+
+    unsigned int indx = 0;
+
+    glm::vec3 init_pos = knots.front()->getInitialPosition();
+    float x = init_pos.x;
+    float y = init_pos.y;
+    float z = init_pos.z;
+
+    // Give all knots new positions
+    for(std::vector<Knot* >::iterator it = knots.begin(); it != knots.end(); ++it) {
+        
+        (*it)->setPosition(glm::vec3(x, y, z));
+        (*it)->setForceDamping(0.75f);
+        (*it)->setMass(0.6f);
+        x += knotSpacing;
+
+        if((indx + 1)%numKnots == 0 && indx > 0) {
+            y += knotSpacing;
+            x = init_pos.x;
+        }
+        indx++;
+    }
+
+    // Stretch the mesh along the diagonals
+    knots[0]->setPosition( knots[0]->getPosition() + glm::vec3(-1.0, -1.0, 0.0) );
+    knots[32]->setPosition( knots[32]->getPosition() + glm::vec3(1.0, -1.0, 0.0) );
+    knots[1056]->setPosition( knots[1056]->getPosition() + glm::vec3(-1.0, 1.0, 0.0) );
+    knots[1088]->setPosition( knots[1088]->getPosition() + glm::vec3(1.0, 1.0, 0.0) );
+
+    std::cout << std::endl;
+    std::cout << "Setup 4 loaded." << std::endl;
 }
 
 
