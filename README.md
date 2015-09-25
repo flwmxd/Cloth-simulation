@@ -4,14 +4,22 @@ Simulation of cloth using a mass-spring model with basic normal mapping on the s
 ## User controlls
 
 ``1`` Run setup1
+
 ``2`` Run setup2
+
 ``3`` Run setup3
+
 ``4`` Run setup4
+
 ``C`` Play/pause simulation
+
 ``K`` Toggle draw mode (knot-point debugging or surface drawing)
+
 ``Arrow up`` Increase height of normalmap
+
 ``Arrow down`` Decrease height of normalmap
-``Mouse`` Rotate scene
+
+``Mouse` Rotate scene
 
 ## Compiling and running
 
