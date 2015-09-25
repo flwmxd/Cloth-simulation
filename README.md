@@ -3,13 +3,13 @@ Simulation of cloth using a mass-spring model with basic normal mapping on the s
 
 ## User controlls
 
-``1`` Run setup1
+``1`` Run setup 1
 
-``2`` Run setup2
+``2`` Run setup 2
 
-``3`` Run setup3
+``3`` Run setup 3
 
-``4`` Run setup4
+``4`` Run setup 4
 
 ``C`` Play/pause simulation
 
