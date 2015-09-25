@@ -105,7 +105,7 @@ void init() {
 
     // Add a collision sphere, doesn't work correctly
     sphere = new Body(new Sphere(3.0f, glm::vec3(0.0f, 0.0f, 5.0f)));
-    scene->addBody(sphere);
+    //scene->addBody(sphere);
 
     // Create a checkered floor for some orientation help
     floor_ = new Body(new Floor(glm::vec3(0.0f, -3.0f, 0.0f), 30.0f, "checker"));
