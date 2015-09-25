@@ -14,7 +14,8 @@
 
 /*
  * Mesh class for the cloth
- *  This class contains/handles all the knots(vertecies) needed to create a mesh.
+ *  This class contains/handles all the knots(vertecies) needed to create a cloth-like mesh.
+ *  A Mesh is a shape
  */
 
 class Mesh : public Shape {
@@ -25,9 +26,11 @@ public:
     Mesh(unsigned int, float, glm::vec3);
     Mesh(unsigned int, float, glm::vec3, std::string, std::string);
 
+    // Destructor
+    ~Mesh();
+
     // Member functions
     void addKnot(Knot *, unsigned int);
-
     void createKnots();
     void createKnotNeighbors();
     void createKnotPoints();
@@ -55,6 +58,7 @@ public:
     void setup2();
     void setup3();
     void setup4();
+    void setup5();
 
     void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int);
     void drawSurface(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&);

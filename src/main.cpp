@@ -57,8 +57,10 @@ int main(int argc, char* argv[]) {
     
     scene = new Scene();
 
+    // Set the gravity, we need the system to start moving
     scene->setAcceleration(glm::vec3(0.0f, -1.0f, 0.0f) * 9.82f);
 
+    // Bind functions to SGCT
     gEngine->setInitOGLFunction(init);
     gEngine->setDrawFunction(draw);
     gEngine->setPreSyncFunction(preSync);
@@ -88,7 +90,7 @@ void init() {
     cloth = new Body(new Mesh(33,                           // Number of knots in vertical and horizintal direction
                               0.5f,                         // Spacing between knots points
                               glm::vec3(0.0f, 7.0f, 0.0f),  // Position of mesh center point
-                              "kappa",               // Texture
+                              "hestens_seng",               // Texture
                               "fabric_normal"));            // Normalmap
 
     // Set some knot points static, we dont want the whole peice to fall
@@ -102,8 +104,8 @@ void init() {
     scene->addBody(cloth);
 
     // Add a collision sphere, doesn't work correctly
-    //sphere = new Body(new Sphere(4.0f, glm::vec3(0.0f, 0.0f, 5.0f)));
-    //scene->addBody(sphere);
+    sphere = new Body(new Sphere(3.0f, glm::vec3(0.0f, 0.0f, 5.0f)));
+    scene->addBody(sphere);
 
     // Create a checkered floor for some orientation help
     floor_ = new Body(new Floor(glm::vec3(0.0f, -3.0f, 0.0f), 30.0f, "checker"));
@@ -242,6 +244,13 @@ void keyCallback(int key, int action)
                 cloth->getShape()->setup4();
             break;
 
+        // Load setup 5 for the cloth
+        case SGCT_KEY_5:
+            if(action == SGCT_PRESS)
+                //cloth->getShape()->setup5();
+            //cloth->getShape()->setWindForce(glm::vec3(sin(curr_time.getVal()* 100.0f) * 1.0f, 0.0f, sin(curr_time.getVal()) * 0.1));
+            break;
+
         // Play or pause the simulation
         case SGCT_KEY_C:
             if(action == SGCT_PRESS) {
@@ -256,15 +265,16 @@ void keyCallback(int key, int action)
         case SGCT_KEY_Z:
             if (action == SGCT_PRESS) {
                 if(!wind) {
-                    cloth->getShape()->setWindForce(glm::vec3(0.0f, 0.0f, (sin(curr_time.getVal()) + 0.0) / 20.0f ));
+                    //cloth->getShape()->setWindForce(glm::vec3(sin(curr_time.getVal() * 0.001) * 0.2, 0.0f, (sin(curr_time.getVal()) + 0.0) / 20.0f ));
                     wind = true;
                 } else {
-                    cloth->getShape()->setWindForce(glm::vec3(0.0f, 0.0f, 0.0f));
+                    //cloth->getShape()->setWindForce(glm::vec3(0.0f, 0.0f, 0.0f));
                     wind = false;
                 }
             }
             break;
 
+        // Increase or decrease bumpyness of cloth
         case SGCT_KEY_UP:
             if(action == SGCT_PRESS)
                 cloth->getShape()->setBumpyness(0.05f);
@@ -283,7 +293,8 @@ void mouseButtonCallback(int button, int action) {
 
     if(gEngine->isMaster()) {
         switch(button) {
-            
+        
+        // Get mouse movement, used for camera rotation
         case SGCT_MOUSE_BUTTON_LEFT:
             mouseLeftButton = (action == SGCT_PRESS ? true : false);
             double tmpYPos;

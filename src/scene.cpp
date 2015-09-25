@@ -120,7 +120,7 @@ void Scene::checkCollisions() {
 void Scene::step() {
     
     checkCollisions();
-    applyG();
+    //applyG();
     applySpringForce();
     integrateVelocities();
 }
@@ -137,7 +137,6 @@ void Scene::applySpringForce() {
 void Scene::integrateVelocities() {
 
     for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
-        // Some euler stuff
         (*it)->getShape()->integrateVelocity(acceleration, dt);
     }
 }

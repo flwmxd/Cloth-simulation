@@ -7,11 +7,19 @@
 #include <vector>
 #include <iostream>
 
+/*
+ * Knot class, a mesh contains knots
+ *  This class handles the physics of the spring forces between each knot in the simulation
+ */
+
 class Knot {
 
 public:
     // Constructors
     Knot(glm::vec3, float, bool is = false);
+
+    // Destructor
+    ~Knot() {};
 
     // Member functions
     void reset();
@@ -25,7 +33,6 @@ public:
     void integrateForce(const float dt) {
         this->velocity += (this->force / mass) * dt;
         this->force *= force_damping;
-        //this->force.z *= 0.6f;
     }
 
     void addAdjNeighbor(Knot *k) {

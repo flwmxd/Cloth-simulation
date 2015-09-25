@@ -22,7 +22,7 @@ FILES = $(wildcard src/*.cpp)
 BINFOLD = bin/
 
 # Binary name:
-BINNAME = main
+BINNAME = clothsim
 
 FOO = this is not windows
 

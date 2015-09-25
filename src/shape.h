@@ -14,6 +14,9 @@ class Body;
 class Shape {
 
 public:
+
+    virtual ~Shape() {};
+
     virtual void draw(glm::mat4&, glm::mat4&, glm::mat4&, glm::mat3&, unsigned int) = 0;
     virtual void init(glm::vec3) = 0;
     virtual void reset() {};
@@ -38,6 +41,7 @@ public:
     virtual void setup2() {};
     virtual void setup3() {};
     virtual void setup4() {};
+    virtual void setup5() {};
 
     Body * body;
 

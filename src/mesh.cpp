@@ -5,7 +5,6 @@ Mesh::Mesh(unsigned int n, float k, glm::vec3 p)
     : numKnots(n), knotSpacing(k), position(p) {
 
     size = std::floor(static_cast<float>(n) / 2.0f) * k;
-    std::cout << "size: " << size << std::endl;
     createKnots();
     createKnotNeighbors();
     createKnotPoints();
@@ -21,7 +20,6 @@ Mesh::Mesh(unsigned int n, float k, glm::vec3 p, std::string t, std::string nM)
     : numKnots(n), knotSpacing(k), position(p), textureName(t), normalMapName(nM) {
 
     size = std::floor(static_cast<float>(n) / 2.0f) * k;
-    std::cout << "size: " << size << std::endl;
     createKnots();
     createKnotNeighbors();
     createKnotPoints();
@@ -38,6 +36,15 @@ Mesh::Mesh(unsigned int n, float k, glm::vec3 p, std::string t, std::string nM)
     specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     specularity = 2.0f;
     bumpyness = 0.2;
+}
+
+
+Mesh::~Mesh() {
+
+    for(unsigned int i = 0; i < knots.size(); i++) {
+        delete knots[i];
+    }
+    knots.clear();
 }
 
 
@@ -75,10 +82,8 @@ void Mesh::createKnotNeighbors() {
             (*it)->addAdjNeighbor(*(it + 1));
 
         // Add knot to the left
-        if((index)%numKnots != 0) {
+        if((index)%numKnots != 0)
             (*it)->addAdjNeighbor(*(it - 1));
-            //std::cout << index << "\t";
-        }
 
         // Add knot above
         if((index < knots.size() - numKnots))
@@ -105,43 +110,23 @@ void Mesh::createKnotNeighbors() {
             (*it)->addDiagNeighbor(*(it + numKnots - 1));
 
         // Add knot 2 steps right
-        if(((index + 2)%numKnots != 0 &&(index + 1)%numKnots != 0) || index == 0) {
+        if(((index + 2)%numKnots != 0 &&(index + 1)%numKnots != 0) || index == 0)
             (*it)->addFlexNeighbor(*(it + 2));
-            //std::cout << index << "\t";
-        }
 
         // Add knot 2 steps left
-        if((index - 1)%numKnots != 0 && index%numKnots != 0) {
+        if((index - 1)%numKnots != 0 && index%numKnots != 0)
             (*it)->addFlexNeighbor(*(it - 2));
-            //std::cout << index << "\t";
-        }
 
         // Add knot 2 steps above
-        if((index < knots.size() - numKnots*2)) {
+        if((index < knots.size() - numKnots*2))
             (*it)->addFlexNeighbor(*(it + numKnots*2));
-            //std::cout << index << "\t";
-        }
 
         // Add knot 2 steps bellow
-        if((index > numKnots*2 - 1)) {
+        if((index > numKnots*2 - 1))
             (*it)->addFlexNeighbor(*(it - numKnots*2));
-            //std::cout << index << "\t";
-        }
 
         index++;
     }
-
-
-    // NEIGHBOR DEBUGGING
-    /*for(int i = 0; i < knots.size(); i++) {
-        std::vector<Knot *> n = knots[i]->getAdjNeighbors();
-        std::cout << "KNOT POS: (" << knots[i]->getPosition().x << ", " << knots[i]->getPosition().y << ", " << knots[i]->getPosition().z << ")" << std::endl;
-        for(std::vector<Knot *>::iterator it = n.begin(); it != n.end(); ++it) {
-            std::cout << "neighbor pos: (" << (*it)->getPosition().x << ", " << (*it)->getPosition().y << ", " << (*it)->getPosition().z << ") \t";
-        }
-        std::cout << std::endl << std::endl;
-    }*/
-
 }
 
 
@@ -199,52 +184,40 @@ void Mesh::createFaceNormals() {
 void Mesh::createVertexNormals() {
    
     std::vector<unsigned int> faceNormalIndices;
-    //std::cout << "SIZE: " << knots.size() << std::endl;
     unsigned int row = 0;
+
     for(unsigned int i = 0; i < knots.size(); i++) {
         if(i < numKnots) {
             if(i == 0) {
-                //faceNormalIndices.push_back(i);
-                //faceNormalIndices.push_back(i + 1);
-                //std::cout << "indices to add at " << i << ": " << i << ", " << i + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back(i + 1);
             } else if(i == numKnots - 1) {
-                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << std::endl << std::endl;
                 faceNormalIndices.push_back(((i - row) * 2) - 1);
             } else {
-                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << ", " << ((i - row) * 2) << ", " << ((i - row) * 2) + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back(((i - row) * 2) - 1);
                 faceNormalIndices.push_back(((i - row) * 2));
                 faceNormalIndices.push_back(((i - row) * 2) + 1);
             }
         } else if(i > (numKnots*numKnots) - (numKnots + 1)) {
             if(i == numKnots*numKnots - 1) {
-                //std::cout << "indices to add at " << i << ": " << (i - (row + 1)) * 2 - (numKnots) * 2 << ", " << (i - (row + 1)) * 2 - (numKnots) * 2 + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2);
                 faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2 + 1);
             } else if(i == (numKnots*numKnots) - numKnots) {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
             } else {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 1);
             }
         } else {
             if(i%numKnots == 0) {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 << ", " << (i - row - 1) * 2 + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 + 1);
             } else if((i+1)%numKnots == 0) {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots) * 2 + 1 << ", " << ((i - row - 1) * 2) - 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2 + 1);
                 faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
             } else {
-                //std::cout << "indices to add at " << i << ": " << ((i - row - 1) * 2)  << ", " << ((i - row - 1) * 2) - 1 << ", " << ((i - row - 1) * 2) + 1;
-                //std::cout << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2);
                 faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
                 faceNormalIndices.push_back(((i - row - 1) * 2) + 1);
@@ -263,14 +236,6 @@ void Mesh::createVertexNormals() {
     }
 
     createVertexNormalsList();
-
-    /*std::cout << std::endl;
-    for(std::vector<glm::vec3>::iterator it = mUniqueVertexNormals.begin(); it != mUniqueVertexNormals.end(); ++it) {
-        std::cout << "vertex normal: (" << (*it).x << ", " << (*it).y << ", " << (*it).z << ")" << std::endl;
-    }
-    std::cout << std::endl;*/
-    std::cout << "mUniqueVertexNormals.size(): " << mUniqueVertexNormals.size() << std::endl;
-    std::cout << "mVertices.size(): " << mVertices.size() << std::endl;
 }
 
 
@@ -315,7 +280,6 @@ void Mesh::createUVs() {
     for(unsigned int i = 0; i < knots.size(); i++) {
         
         if(((i+1)%numKnots != 0 && i < (numKnots*numKnots) - numKnots) || (i == 0 && i < (numKnots*numKnots) - numKnots)) {
-            //std::cout << "i: " << i << std::endl;
             mUvs.push_back(glm::vec2(static_cast<float>(col) * d_uv, static_cast<float>(row) * d_uv));
             mUvs.push_back(glm::vec2(static_cast<float>(col+1) * d_uv, static_cast<float>(row+1) * d_uv));
             mUvs.push_back(glm::vec2(static_cast<float>(col) * d_uv, static_cast<float>(row+1) * d_uv));
@@ -423,48 +387,35 @@ void Mesh::updateVertexNormals() {
     for(unsigned int i = 0; i < knots.size(); i++) {
         if(i < numKnots) {
             if(i == 0) {
-                //faceNormalIndices.push_back(i);
-                //faceNormalIndices.push_back(i + 1);
-                //std::cout << "indices to add at " << i << ": " << i << ", " << i + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back(i + 1);
             } else if(i == numKnots - 1) {
-                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << std::endl << std::endl;
                 faceNormalIndices.push_back(((i - row) * 2) - 1);
             } else {
-                //std::cout << "indices to add at " << i << ": " << ((i - row) * 2) - 1 << ", " << ((i - row) * 2) << ", " << ((i - row) * 2) + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back(((i - row) * 2) - 1);
                 faceNormalIndices.push_back(((i - row) * 2));
                 faceNormalIndices.push_back(((i - row) * 2) + 1);
             }
         } else if(i > (numKnots*numKnots) - (numKnots + 1)) {
             if(i == numKnots*numKnots - 1) {
-                //std::cout << "ROW: " << row << std::endl;
-                //std::cout << "indices to add at " << i << ": " << (i - (row + 1)) * 2 - (numKnots) * 2 << ", " << (i - (row + 1)) * 2 - (numKnots) * 2 + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2);
                 faceNormalIndices.push_back((i - (row + 1)) * 2 - (numKnots) * 2 + 1);
             } else if(i == (numKnots*numKnots) - numKnots) {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
             } else {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2 - 1);
             }
         } else {
             if(i%numKnots == 0) {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots - 1) * 2 << ", " << (i - row - 1) * 2 << ", " << (i - row - 1) * 2 + 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots - 1) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 + 1);
             } else if((i+1)%numKnots == 0) {
-                //std::cout << "indices to add at " << i << ": " << (i - row - 1) * 2 - (numKnots) * 2 << ", " << (i - row - 1) * 2 - (numKnots) * 2 + 1 << ", " << ((i - row - 1) * 2) - 1 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2);
                 faceNormalIndices.push_back((i - row - 1) * 2 - (numKnots) * 2 + 1);
                 faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
             } else {
-                //std::cout << "indices to add at " << i << ": " << ((i - row - 1) * 2)  << ", " << ((i - row - 1) * 2) - 1 << ", " << ((i - row - 1) * 2) + 1;
-                //std::cout << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 2 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 - 1 << ", " << (i - row - 1) * 2 - (numKnots - 1) * 2 << std::endl << std::endl;
                 faceNormalIndices.push_back((i - row - 1) * 2);
                 faceNormalIndices.push_back(((i - row - 1) * 2) - 1);
                 faceNormalIndices.push_back(((i - row - 1) * 2) + 1);
@@ -527,9 +478,6 @@ void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::
     updateFaceNormals();
     updateVertexNormals();
     updateVertexNormalsList();
-    //mTangents.clear();
-    //mBitangents.clear();
-    //computeTangentBasis(mVertices, mUvs, mVertexNormals, mTangents, mBitangents);
 
     // Disable back face culling, since we want both sides of the cloth to be visible
     glDisable(GL_CULL_FACE);
@@ -611,7 +559,7 @@ void Mesh::init(glm::vec3 lightPos) {
 
 void Mesh::initKnotDrawing(glm::vec3 lightPos) {
 
-    std::cout << "Initializing knot drawing" << std::endl;
+    std::cout << "Initializing knot drawing..." << std::endl;
 
     knotColor = glm::vec4(0.8, 0.3, 0.3, 1.0);
 
@@ -634,7 +582,7 @@ void Mesh::initKnotDrawing(glm::vec3 lightPos) {
 
 void Mesh::initSurface(glm::vec3 lightPos) {
 
-    std::cout << "Initializing mesh" << std::endl;
+    std::cout << "Initializing mesh...";
 
     // Load textures
     sgct::TextureManager::instance()->setAnisotropicFilterSize(8.0f);
@@ -751,8 +699,6 @@ void Mesh::initSurface(glm::vec3 lightPos) {
     // Unbind buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    std::cout << "Mesh initialized" << std::endl;
 }
 
 
@@ -798,7 +744,7 @@ void Mesh::applyG(const glm::vec3 G, float dt) {
 
 
 void Mesh::resolveCollision(Knot *k) {
-    // RESOLVE COLLISION
+    // Add cloth self-collision if time is given
 }
 
 
@@ -826,14 +772,14 @@ void Mesh::setWindForce(glm::vec3 w_f) {
 
 void Mesh::setup1() {
     
-    std::cout << "Loading setup 1 ..." << std::endl;
+    std::cout << "Loading setup 1 ...";
 
     setAllBodiesNonStatic();
 
     setBodyStatic(1056);
-    setBodyStatic(1064);
-    setBodyStatic(1072);
-    setBodyStatic(1080);
+    //setBodyStatic(1064);
+    //setBodyStatic(1072);
+    //setBodyStatic(1080);
     setBodyStatic(1088);
 
     // Reset the mesh, i.e. positions, velocities and forces.
@@ -851,7 +797,7 @@ void Mesh::setup1() {
         
         (*it)->setPosition(glm::vec3(x, y, z));
         (*it)->setForceDamping(0.75f);
-        (*it)->setMass(0.6f);
+        (*it)->setMass(1.0f);
         x += knotSpacing;
 
         if((indx + 1)%numKnots == 0 && indx > 0) {
@@ -860,14 +806,16 @@ void Mesh::setup1() {
         }
         indx++;
     }
-    std::cout << std::endl;
-    std::cout << "Setup 1 loaded." << std::endl;
+
+    knots[1072]->addForce(glm::vec3(0.0, 0.0, 0.5));
+
+    std::cout << "\tDone!" << std::endl << std::endl;
 }
 
 
 void Mesh::setup2() {
 
-    std::cout << "Loading setup 2 ..." << std::endl;
+    std::cout << "Loading setup 2 ...";
 
     setAllBodiesNonStatic();
 
@@ -894,7 +842,7 @@ void Mesh::setup2() {
         glm::vec3 init_force = (*it)->getForce();
         //(*it)->setForce(glm::vec3(init_force.x*0.5, init_force.y*0.5, init_force.z*0.5));
         (*it)->setForceDamping(0.75f);
-        (*it)->setMass(0.6f);
+        (*it)->setMass(1.0f);
         x += knotSpacing;
 
         if((indx + 1)%numKnots == 0 && indx > 0) {
@@ -903,14 +851,13 @@ void Mesh::setup2() {
         }
         indx++;
     }
-    std::cout << std::endl;
-    std::cout << "Setup 2 loaded." << std::endl;
+    std::cout << "\tDone!" << std::endl << std::endl;
 }
 
 
 void Mesh::setup3() {
 
-    std::cout << "Loading setup 3 ..." << std::endl;
+    std::cout << "Loading setup 3 ...";
 
     setAllBodiesNonStatic();
 
@@ -955,7 +902,7 @@ void Mesh::setup3() {
         glm::vec3 init_force = (*it)->getForce();
         //(*it)->setForce(glm::vec3(init_force.x*0.5, init_force.y*0.5, init_force.z*0.5));
         (*it)->setForceDamping(0.75f);
-        (*it)->setMass(0.6f);
+        (*it)->setMass(1.0f);
         x += knotSpacing;
 
         if((indx + 1)%numKnots == 0 && indx > 0) {
@@ -965,14 +912,13 @@ void Mesh::setup3() {
         indx++;
     }
 
-    std::cout << std::endl;
-    std::cout << "Setup 3 loaded." << std::endl;
+    std::cout << "\tDone!" << std::endl << std::endl;
 }
 
 
 void Mesh::setup4() {
 
-    std::cout << "Loading setup 4 ..." << std::endl;
+    std::cout << "Loading setup 4 ...";
 
     setAllBodiesNonStatic();
 
@@ -996,7 +942,7 @@ void Mesh::setup4() {
         
         (*it)->setPosition(glm::vec3(x, y, z));
         (*it)->setForceDamping(0.75f);
-        (*it)->setMass(0.6f);
+        (*it)->setMass(1.0f);
         x += knotSpacing;
 
         if((indx + 1)%numKnots == 0 && indx > 0) {
@@ -1006,14 +952,54 @@ void Mesh::setup4() {
         indx++;
     }
 
+    float stretch = 0.5f;
     // Stretch the mesh along the diagonals
-    knots[0]->setPosition( knots[0]->getPosition() + glm::vec3(-1.0, -1.0, 0.0) );
-    knots[32]->setPosition( knots[32]->getPosition() + glm::vec3(1.0, -1.0, 0.0) );
-    knots[1056]->setPosition( knots[1056]->getPosition() + glm::vec3(-1.0, 1.0, 0.0) );
-    knots[1088]->setPosition( knots[1088]->getPosition() + glm::vec3(1.0, 1.0, 0.0) );
+    knots[0]->setPosition( knots[0]->getPosition() + stretch * glm::vec3(-1.0, -1.0, 0.0) );
+    knots[32]->setPosition( knots[32]->getPosition() + stretch * glm::vec3(1.0, -1.0, 0.0) );
+    knots[1056]->setPosition( knots[1056]->getPosition() + stretch * glm::vec3(-1.0, 1.0, 0.0) );
+    knots[1088]->setPosition( knots[1088]->getPosition() + stretch * glm::vec3(1.0, 1.0, 0.0) );
 
-    std::cout << std::endl;
-    std::cout << "Setup 4 loaded." << std::endl;
+    std::cout << "\tDone!" << std::endl << std::endl;
+}
+
+
+void Mesh::setup5() {
+    
+    std::cout << "Loading setup 5 ...";
+
+    setAllBodiesNonStatic();
+
+    for(unsigned int i = 0; i < numKnots * numKnots - 1; i+=33)
+        setBodyStatic(i);
+
+    // Reset the mesh, i.e. positions, velocities and forces.
+    reset();
+
+    unsigned int indx = 0;
+
+    glm::vec3 init_pos = knots.front()->getInitialPosition();
+    float x = init_pos.x;
+    float y = init_pos.y;
+    float z = init_pos.z;
+
+    // Give all knots new positions
+    for(std::vector<Knot* >::iterator it = knots.begin(); it != knots.end(); ++it) {
+        
+        (*it)->setPosition(glm::vec3(x, y, z));
+        (*it)->setForceDamping(0.75f);
+        (*it)->setMass(1.0f);
+        x += knotSpacing;
+
+        if((indx + 1)%numKnots == 0 && indx > 0) {
+            y += knotSpacing;
+            x = init_pos.x;
+        }
+        indx++;
+    }
+
+    knots[1072]->addForce(glm::vec3(0.0, 0.0, 0.5));
+
+    std::cout << "\tDone!" << std::endl << std::endl;
 }
 
 

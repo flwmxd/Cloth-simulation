@@ -49,7 +49,7 @@ void main()
 
     vec3 light_t = MVT * light_dir;
 
-    vec3 normal_prime = normalize(vec3(((2.0 * normal_data.r) - 1.0)*0.2, 
+    vec3 normal_prime = normalize(vec3(((2.0 * normal_data.r) - 1.0)*bumpyness, 
                   ((2.0 * normal_data.g) - 1.0) * bumpyness,
                   ((2.0 * normal_data.b) - 1.0)));
 
