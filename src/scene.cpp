@@ -1,7 +1,7 @@
 #include "scene.h"
 
 Scene::Scene() {
-    lightPosition = glm::vec3(0.0f, 25.0f, 25.0f);
+    lightPosition = glm::vec3(0.0f, 25.0f, 5.0f);
 }
 
 void Scene::addBody(Body * b) {
@@ -52,7 +52,7 @@ void Scene::draw(glm::mat4 activeMVPMatrix, glm::mat4 activeMVMatrix, glm::mat4 
     glEnable(GL_BLEND);
 
     // Set background color of the scene, just some boring grey is enough for now
-    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+    glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 
     // Clear the color buffer from the grey we used for the background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -123,6 +123,7 @@ void Scene::step() {
     //applyG();
     applySpringForce();
     integrateVelocities();
+    //enforceMaximumStretch();
 }
 
 
@@ -140,6 +141,14 @@ void Scene::integrateVelocities() {
         (*it)->getShape()->integrateVelocity(acceleration, dt);
     }
 }
+
+
+void Scene::enforceMaximumStretch() {
+    for(std::vector<Body *>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+        (*it)->getShape()->enforceMaximumStretch();
+    }
+}
+
 
 void Scene::applyG() {
 

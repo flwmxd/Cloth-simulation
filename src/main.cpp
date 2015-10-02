@@ -38,8 +38,8 @@ bool play_pause = false;
 // Wind or not?
 bool wind = false;
 
-// How many simualtions per frame
-const unsigned int simulations_per_frame = 20;
+// How many simulations per frame
+const unsigned int simulations_per_frame = 22;
 
 // Camera rotation
 sgct::SharedObject<glm::mat4> cameraRot;
@@ -105,7 +105,7 @@ void init() {
 
     // Add a collision sphere, doesn't work correctly
     sphere = new Body(new Sphere(3.0f, glm::vec3(0.0f, 0.0f, 5.0f)));
-    //scene->addBody(sphere);
+    scene->addBody(sphere);
 
     // Create a checkered floor for some orientation help
     floor_ = new Body(new Floor(glm::vec3(0.0f, -3.0f, 0.0f), 30.0f, "checker"));
@@ -119,7 +119,12 @@ void draw() {
     // Set current time and step size for the simulation
     scene->setTime(static_cast<float>(curr_time.getVal()));
     scene->setDt(gEngine->getDt() / static_cast<float>(simulations_per_frame));
-    
+
+    if(wind)
+        cloth->getShape()->setWindForce(glm::vec3(1.0 - sin(curr_time.getVal() * 1.0) * 0.1, 0.0f, (sin(curr_time.getVal())) / 200.0f ));
+    else
+        cloth->getShape()->setWindForce(glm::vec3(0.0f, 0.0f, 0.0f));
+
     // Step the simulation one time step forward if it is not paused
     if(play_pause) {
         for(unsigned int i = 0; i < simulations_per_frame; i++) {
@@ -271,6 +276,12 @@ void keyCallback(int key, int action)
                     //cloth->getShape()->setWindForce(glm::vec3(0.0f, 0.0f, 0.0f));
                     wind = false;
                 }
+            }
+            break;
+
+        case SGCT_KEY_N:
+            if (action == SGCT_PRESS) {
+                cloth->getShape()->setAllBodiesNonStatic();
             }
             break;
 

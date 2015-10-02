@@ -50,8 +50,8 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
         glm::vec3 delta_v;
         glm::vec3 f;
 
-        float k = 1000.0f;
-        float b = 40.0f;
+        float k = 7000.0f;
+        float b = 80.0f;
         float l = springLength;
         float l_diag = sqrt(l*l + l*l);
         float l_double = l * 2.0f;
@@ -65,44 +65,48 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
 
             spring_elongation = glm::length(delta_p) - l;
 
-            f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
-            f += -0.1f * this->velocity;
+            f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p)) * delta_p_hat;
             (*it)->addForce(-f + this->wind);
             this->force += f + this->wind;
         }
 
-        k = 1000.0f;
-        b = 40.0f;
+        k = 7000.0f;
+        b = 80.0f;
         for(std::vector<Knot *>::iterator it = diagNeighbors.begin(); it != diagNeighbors.end(); ++it) {
-            //neighborStretch += SPRING_CONSTANT * (glm::length(position - (*it)->getPosition()) - DIAG_SPRING);
+            
             delta_v = this->velocity - (*it)->getVelocity();
             delta_p = this->position - (*it)->getPosition();
             delta_p_hat = glm::normalize(delta_p);
 
             spring_elongation = glm::length(delta_p) - l_diag;
 
-            f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
+            f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p)) * delta_p_hat;
 
             (*it)->addForce(-f);
-            this->force += f;
+            this->force += f + this->wind;
         }
 
-        k = 1500.0f;
-        b = 40.0f;
+        k = 200.0f;
+        b = 30.0f;
         for(std::vector<Knot *>::iterator it = flexNeighbors.begin(); it != flexNeighbors.end(); ++it) {
-            //neighborStretch += SPRING_CONSTANT * (glm::length(position - (*it)->getPosition()) - DIAG_SPRING);
+            
             delta_v = this->velocity - (*it)->getVelocity();
             delta_p = this->position - (*it)->getPosition();
             delta_p_hat = glm::normalize(delta_p);
 
             spring_elongation = glm::length(delta_p) - l_double;
 
-            f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p_hat)) * delta_p_hat;
+            f = (-k * spring_elongation - b * glm::dot(delta_v, delta_p)) * delta_p_hat;
 
             (*it)->addForce(-f);
-            this->force += f;
+            this->force += f + this->wind;
         }
     }
+}
+
+
+void Knot::enforceMaximumStretch() {
+
 }
 
 

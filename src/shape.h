@@ -25,6 +25,7 @@ public:
     virtual void applyG(const glm::vec3, float) {};
     virtual void applySpringForce(float, float, glm::vec3) {};
     virtual void resolveCollision(Knot *) {};
+    virtual void enforceMaximumStretch() {};
     
     virtual unsigned int getType() = 0;
     virtual glm::vec3 getPosition() = 0;
@@ -32,6 +33,7 @@ public:
 
     virtual void setBodyStatic(int) = 0;
     virtual void setBodyNonStatic(int) {};
+    virtual void setAllBodiesNonStatic() {};
     virtual void setWindForce(glm::vec3) {};
     virtual void setPosition(glm::vec3) = 0;
     virtual void setTexture(std::string) {};

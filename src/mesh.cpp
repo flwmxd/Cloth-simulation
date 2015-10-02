@@ -362,7 +362,6 @@ void Mesh::updateVertices() {
     }
 }
 
-
 void Mesh::updateFaceNormals() {
 
     unsigned int indx = 0;
@@ -459,12 +458,55 @@ void Mesh::updateVertexNormalsList() {
 }
 
 
+void Mesh::flipNormals() {
+
+    for(unsigned int i = 0; i < mVertexNormals.size(); i++) {
+        mVertexNormals[i] = -mVertexNormals[i];
+    }
+}
+
+
+void Mesh::flipMesh() {
+
+    unsigned int indx = 0;
+
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end() - (numKnots + 1); ++it) {
+        
+        if(((*it)->getIndex() + 1)%numKnots != 0 ||(*it)->getIndex() == 0) {
+
+            mVertices[indx] = (*it)->getPosition();
+            mVertices[indx + 1] = (*(it + numKnots))->getPosition();
+            mVertices[indx + 2] = (*(it + numKnots + 1))->getPosition();
+            
+            mVertices[indx + 3] = (*it)->getPosition();
+            mVertices[indx + 4] = (*(it + numKnots + 1))->getPosition();
+            mVertices[indx + 5] = (*(it + 1))->getPosition();
+
+            indx += 6;
+        }
+    }
+}
+
+
 void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM, unsigned int drawType) {
 
-    if(drawType == DRAW_POINTS)
+    if(drawType == DRAW_POINTS) {
+      
         drawKnots(MVP, MV, MV_light, NM);
-    else
+
+    } else {
+
+        // Update vertex positions and normals
+        updateVertices();
+        updateFaceNormals();
+        updateVertexNormals();
+        updateVertexNormalsList();
+
         drawSurface(MVP, MV, MV_light, NM);
+        //flipNormals();
+        //flipMesh();
+        //drawSurface(MVP, MV, MV_light, NM);
+    }
 }
 
 
@@ -472,12 +514,6 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
  * Draws a polygon surface of the mesh
  */
 void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM) {
-
-    // Update vertex positions and normals
-    updateVertices();
-    updateFaceNormals();
-    updateVertexNormals();
-    updateVertexNormalsList();
 
     // Disable back face culling, since we want both sides of the cloth to be visible
     glDisable(GL_CULL_FACE);
@@ -715,6 +751,11 @@ void Mesh::applySpringForce(float t, float dt, glm::vec3 a) {
 
     for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
         if((*it)->isStatic()) continue;
+            (*it)->setForce(glm::vec3(0.0, 0.0, 0.0));
+    }
+
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end(); ++it) {
+        if((*it)->isStatic()) continue;
             (*it)->applySpringForce(t, a);
     }
 
@@ -745,6 +786,16 @@ void Mesh::applyG(const glm::vec3 G, float dt) {
 
 void Mesh::resolveCollision(Knot *k) {
     // Add cloth self-collision if time is given
+    
+}
+
+
+void Mesh::enforceMaximumStretch() {
+    // Only allow springs to stretch or compress
+    // a certain amount, say 15 percent
+    for(std::vector<Knot*>::iterator it = knots.begin(); it != knots.end(); ++it) {
+        (*it)->enforceMaximumStretch();
+    }
 }
 
 
@@ -796,7 +847,7 @@ void Mesh::setup1() {
     for(std::vector<Knot* >::iterator it = knots.begin(); it != knots.end(); ++it) {
         
         (*it)->setPosition(glm::vec3(x, y, z));
-        (*it)->setForceDamping(0.75f);
+        (*it)->setForceDamping(1.0f);
         (*it)->setMass(1.0f);
         x += knotSpacing;
 
@@ -807,7 +858,7 @@ void Mesh::setup1() {
         indx++;
     }
 
-    knots[1072]->addForce(glm::vec3(0.0, 0.0, 0.5));
+    knots[1072]->setPosition(knots[1072]->getPosition() + glm::vec3(0.0, 0.0, 0.1));
 
     std::cout << "\tDone!" << std::endl << std::endl;
 }
@@ -841,7 +892,7 @@ void Mesh::setup2() {
         (*it)->setPosition(glm::vec3(x, y, z));
         glm::vec3 init_force = (*it)->getForce();
         //(*it)->setForce(glm::vec3(init_force.x*0.5, init_force.y*0.5, init_force.z*0.5));
-        (*it)->setForceDamping(0.75f);
+        (*it)->setForceDamping(1.0f);
         (*it)->setMass(1.0f);
         x += knotSpacing;
 
@@ -901,7 +952,7 @@ void Mesh::setup3() {
         (*it)->setPosition(glm::vec3(x, y, z));
         glm::vec3 init_force = (*it)->getForce();
         //(*it)->setForce(glm::vec3(init_force.x*0.5, init_force.y*0.5, init_force.z*0.5));
-        (*it)->setForceDamping(0.75f);
+        (*it)->setForceDamping(1.0f);
         (*it)->setMass(1.0f);
         x += knotSpacing;
 
@@ -941,7 +992,7 @@ void Mesh::setup4() {
     for(std::vector<Knot* >::iterator it = knots.begin(); it != knots.end(); ++it) {
         
         (*it)->setPosition(glm::vec3(x, y, z));
-        (*it)->setForceDamping(0.75f);
+        (*it)->setForceDamping(1.0f);
         (*it)->setMass(1.0f);
         x += knotSpacing;
 
@@ -986,7 +1037,7 @@ void Mesh::setup5() {
     for(std::vector<Knot* >::iterator it = knots.begin(); it != knots.end(); ++it) {
         
         (*it)->setPosition(glm::vec3(x, y, z));
-        (*it)->setForceDamping(0.75f);
+        (*it)->setForceDamping(1.0f);
         (*it)->setMass(1.0f);
         x += knotSpacing;
 

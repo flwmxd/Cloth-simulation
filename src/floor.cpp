@@ -139,18 +139,29 @@ void Floor::init(glm::vec3 lightPos) {
 }
 
 
-void Floor::resolveCollision(Knot *) {
+void Floor::resolveCollision(Knot *k) {
 
+    if(k->getPosition().y < this->position.y) {
+
+        float dist = abs(k->getPosition().y - this->position.y);
+
+        glm::vec3 p = k->getPosition();
+
+        k->setPosition(glm::vec3(p.x, this->position.y + dist*4.0f, p.z));
+
+        k->setVelocity(glm::vec3(0.0f, 0.0f, 0.0f));
+        //k->setForce(glm::vec3(0.0f, 0.0f, 0.0f));
+    }
 }
 
 
 void Floor::createVertices() {
-    mVertices.push_back(glm::vec3(-1.0f * size + position.x, 0.0f + position.y, -1.0f * size + position.z));
-    mVertices.push_back(glm::vec3(-1.0f * size + position.x, 0.0f + position.y,  1.0f * size + position.z));
-    mVertices.push_back(glm::vec3( 1.0f * size + position.x, 0.0f + position.y,  1.0f * size + position.z));
-    mVertices.push_back(glm::vec3(-1.0f * size + position.x, 0.0f + position.y, -1.0f * size + position.z));
-    mVertices.push_back(glm::vec3( 1.0f * size + position.x, 0.0f + position.y,  1.0f * size + position.z));
-    mVertices.push_back(glm::vec3( 1.0f * size + position.x, 0.0f + position.y, -1.0f * size + position.z));
+    mVertices.push_back(glm::vec3(-1.0f * size + position.x, -0.2f + position.y, -1.0f * size + position.z));
+    mVertices.push_back(glm::vec3(-1.0f * size + position.x, -0.2f + position.y,  1.0f * size + position.z));
+    mVertices.push_back(glm::vec3( 1.0f * size + position.x, -0.2f + position.y,  1.0f * size + position.z));
+    mVertices.push_back(glm::vec3(-1.0f * size + position.x, -0.2f + position.y, -1.0f * size + position.z));
+    mVertices.push_back(glm::vec3( 1.0f * size + position.x, -0.2f + position.y,  1.0f * size + position.z));
+    mVertices.push_back(glm::vec3( 1.0f * size + position.x, -0.2f + position.y, -1.0f * size + position.z));
 }
 
 

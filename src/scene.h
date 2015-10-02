@@ -30,6 +30,7 @@ public:
 
     void step();
     void applySpringForce();
+    void enforceMaximumStretch();
     void integrateVelocities();
     void applyG();
 

@@ -52,6 +52,8 @@ public:
     void updateFaceNormals();
     void updateVertexNormals();
     void updateVertexNormalsList();
+    void flipNormals();
+    void flipMesh();
 
     // Some initial setups for the mesh
     void setup1();
@@ -74,6 +76,7 @@ public:
     void integrateVelocity(const glm::vec3, float);
     void applyG(const glm::vec3, float);
     void resolveCollision(Knot *);
+    void enforceMaximumStretch();
 
     // Getters
     unsigned int getType() { return MESH_SHAPE; };

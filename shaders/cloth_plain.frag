@@ -29,7 +29,7 @@ vec4 calcShading( vec3 N, vec3 L, mat3 MVT )
     Idiff = clamp(Idiff, 0.0, 1.0);
 
     //Specular contribution
-    vec3 E = -normalize(MVT * v);
+    vec3 E = -normalize(v);
     vec3 R = normalize(reflect(-L, N));
     //const float specExp = 10.0;
     vec4 Ispec = lightSpecular
@@ -53,14 +53,5 @@ void main()
                   ((2.0 * normal_data.g) - 1.0) * bumpyness,
                   ((2.0 * normal_data.b) - 1.0)));
 
-    //vec3 normal_v = inverse(MVT) * normal_prime;
-
-    //vec4 asd = texture(NormalMap, UV.st);
-    //color = vec4(0.0, 0.0, 0.0, 0.0);
-    // Ugly hack for the checkered floor
-    //color.rgb = (color.r > 0.5) ? vec3(1.0, 1.0, 1.0) : vec3(0.0, 0.0, 0.0);
-    color.rgb *= calcShading(normalMatrix * normal_prime, light_dir, MVT).rgb;
-    //color
-    //color.a = 1.0;
-    //color.rgb = vec3(0.8, 0.4, 0.4);
+    color.rgb *= calcShading(normalMatrix * normal, light_dir, MVT).rgb;
 }

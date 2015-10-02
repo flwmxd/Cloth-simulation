@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <iostream>
+#include "debug.h"
 
 /*
  * Knot class, a mesh contains knots
@@ -30,9 +31,12 @@ public:
 
     void applySpringForce(float, glm::vec3);
 
+    void enforceMaximumStretch();
+
     void integrateForce(const float dt) {
-        this->velocity += (this->force / mass) * dt;
         this->force *= force_damping;
+        this->velocity += (this->force / mass) * dt;
+        
     }
 
     void addAdjNeighbor(Knot *k) {
@@ -66,6 +70,7 @@ public:
     void setNonStatic() {_isStatic = false; };
     void setMass(float m) { this->mass = m; };
     void setPosition(glm::vec3 p) { this->position = p; };
+    void setVelocity(glm::vec3 v) { this->velocity = v; };
     void setForce(glm::vec3 f) { this->force = f; };
     void setForceDamping(float d) { this->force_damping = d; };
     void setWindForce(glm::vec3 w_f) { this->wind = w_f; };

@@ -1,12 +1,12 @@
 # Compiler:
-CC = g++
+CC = g++-4.9
 
 # Flags:
 # -Wall -pedantic
 CFLAGS = -O3
 
 # More flags:
-FRAMEWORKS = -lsgct -framework Opengl -framework Cocoa -framework IOKit -framework CoreVideo -stdlib=libstdc++
+FRAMEWORKS = -lsgct -framework Opengl -framework Cocoa -framework IOKit -framework CoreVideo -std=c++11
 
 
 
