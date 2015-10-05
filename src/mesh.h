@@ -53,6 +53,7 @@ public:
     void updateVertexNormals();
     void updateVertexNormalsList();
     void flipNormals();
+    void flipUvs();
     void flipMesh();
 
     // Some initial setups for the mesh

@@ -86,6 +86,7 @@ void Sphere::resolveCollision(Knot *k) {
 
         glm::vec3 pos = k->getPosition();
 
+        // Separate objects and set velocity to zero
         pos += (2.0f * penetration) * intersection_normal;
         k->setPosition(pos);
         k->setVelocity(glm::vec3(0.0f, 0.0f, 0.0f));

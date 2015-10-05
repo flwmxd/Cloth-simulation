@@ -93,7 +93,7 @@ void init() {
                               "hestens_seng",               // Texture
                               "fabric_normal"));            // Normalmap
 
-    // Set some knot points static, we dont want the whole peice to fall
+    // Set some knot points static, we dont want the whole piece to fall
     cloth->getShape()->setBodyStatic(1056);
     cloth->getShape()->setBodyStatic(1064);
     cloth->getShape()->setBodyStatic(1072);

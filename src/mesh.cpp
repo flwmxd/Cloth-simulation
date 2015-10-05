@@ -460,6 +460,25 @@ void Mesh::updateVertexNormalsList() {
 
 void Mesh::flipNormals() {
 
+    unsigned int indx = 0;
+    glm::vec3 tmp = glm::vec3(0.0f);
+
+    for(std::vector<Knot *>::iterator it = knots.begin(); it != knots.end() - (numKnots + 1); ++it) {
+        
+        if(((*it)->getIndex() + 1)%numKnots != 0 ||(*it)->getIndex() == 0) {
+
+            tmp = mVertexNormals[indx + 1];
+            mVertexNormals[indx + 1] = mVertexNormals[indx + 2];
+            mVertexNormals[indx + 2] = tmp;
+            
+            tmp = mVertexNormals[indx + 4];
+            mVertexNormals[indx + 4] = mVertexNormals[indx + 5];
+            mVertexNormals[indx + 5] = tmp;
+
+            indx += 6;
+        }
+    }
+
     for(unsigned int i = 0; i < mVertexNormals.size(); i++) {
         mVertexNormals[i] = -mVertexNormals[i];
     }
@@ -488,6 +507,29 @@ void Mesh::flipMesh() {
 }
 
 
+void Mesh::flipUvs() {
+
+    unsigned int indx = 0;
+    glm::vec2 tmp = glm::vec2(0.0f);
+
+    for(unsigned int i = 0; i < knots.size(); i++) {
+        
+        if(((i+1)%numKnots != 0 && i < (numKnots*numKnots) - numKnots) || (i == 0 && i < (numKnots*numKnots) - numKnots)) {
+            
+            tmp = mUvs[indx + 1];
+            mUvs[indx + 1] = mUvs[indx + 2];
+            mUvs[indx + 2] = tmp;
+            
+            tmp = mUvs[indx + 4];
+            mUvs[indx + 4] = mUvs[indx + 5];
+            mUvs[indx + 5] = tmp;
+
+            indx += 6;
+        }
+    }
+}
+
+
 void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM, unsigned int drawType) {
 
     if(drawType == DRAW_POINTS) {
@@ -503,9 +545,11 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
         updateVertexNormalsList();
 
         drawSurface(MVP, MV, MV_light, NM);
-        //flipNormals();
-        //flipMesh();
-        //drawSurface(MVP, MV, MV_light, NM);
+        flipNormals();
+        flipMesh();
+        flipUvs();
+        drawSurface(MVP, MV, MV_light, NM);
+        flipUvs();
     }
 }
 
@@ -516,7 +560,7 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
 void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM) {
 
     // Disable back face culling, since we want both sides of the cloth to be visible
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureByHandle(texHandle));
@@ -545,6 +589,10 @@ void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::
     glBindBuffer(GL_ARRAY_BUFFER, normalCoordBuffer);
     glBufferData(GL_ARRAY_BUFFER, mVertexNormals.size() * sizeof(glm::vec3), &mVertexNormals[0], GL_STATIC_DRAW);
 
+    // Rebind the buffer data, Uvs are now updated
+    glBindBuffer(GL_ARRAY_BUFFER, texCoordBuffer);
+    glBufferData(GL_ARRAY_BUFFER, mUvs.size() * sizeof(glm::vec2), &mUvs[0], GL_STATIC_DRAW);
+
     // Draw the triangles
     glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
 
@@ -554,7 +602,7 @@ void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
 
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
 }
 
 
@@ -786,7 +834,7 @@ void Mesh::applyG(const glm::vec3 G, float dt) {
 
 void Mesh::resolveCollision(Knot *k) {
     // Add cloth self-collision if time is given
-    
+
 }
 
 
