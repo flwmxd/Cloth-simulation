@@ -8,6 +8,7 @@ Knot::Knot(glm::vec3 p, float l, bool is)
     wind = glm::vec3(0.0f, 0.0f, 0.0f);
     force_damping = 0.75f;
     mass = 1.0f;
+    collision_radius = l / 2.0f;
 };
 
 
@@ -107,6 +108,22 @@ void Knot::applySpringForce(float t, glm::vec3 a) {
 
 void Knot::enforceMaximumStretch() {
 
+}
+
+
+bool Knot::isNeighbor(Knot *k) {
+
+    for(std::vector<Knot *>::iterator it = adjNeighbors.begin(); it != adjNeighbors.end(); ++it) {
+        if(k->getIndex() == (*it)->getIndex())
+            return true;
+    }
+    
+    for(std::vector<Knot *>::iterator it = diagNeighbors.begin(); it != diagNeighbors.end(); ++it) {
+        if(k->getIndex() == (*it)->getIndex())
+            return true;
+    }
+
+    return false;
 }
 
 

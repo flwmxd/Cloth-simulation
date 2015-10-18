@@ -108,10 +108,7 @@ void Scene::checkCollisions() {
 
     for(std::vector<Body *>::iterator body_it = bodies.begin(); body_it != bodies.end(); ++body_it) {
         for(std::vector<Knot *>::iterator knot_it = mesh_knots.begin(); knot_it != mesh_knots.end(); ++knot_it) {
-            // if a shape is not the cloth, we want to check collisions
-            if((*body_it)->getShape()->getType() != 0) {
-                (*body_it)->getShape()->resolveCollision((*knot_it));
-            }
+            (*body_it)->getShape()->resolveCollision((*knot_it));
         }
     }
 }

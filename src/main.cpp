@@ -39,7 +39,7 @@ bool play_pause = false;
 bool wind = false;
 
 // How many simulations per frame
-const unsigned int simulations_per_frame = 22;
+const unsigned int simulations_per_frame = 15;
 
 // Camera rotation
 sgct::SharedObject<glm::mat4> cameraRot;
@@ -103,7 +103,7 @@ void init() {
     // Add the cloth to our scene
     scene->addBody(cloth);
 
-    // Add a collision sphere, doesn't work correctly
+    // Add a collision sphere
     sphere = new Body(new Sphere(3.0f, glm::vec3(0.0f, 0.0f, 5.0f)));
     scene->addBody(sphere);
 
@@ -118,7 +118,7 @@ void init() {
 void draw() {
     // Set current time and step size for the simulation
     scene->setTime(static_cast<float>(curr_time.getVal()));
-    scene->setDt(gEngine->getDt() / static_cast<float>(simulations_per_frame));
+    scene->setDt((1.0f / 60.0f) / static_cast<float>(simulations_per_frame));
 
     if(wind)
         cloth->getShape()->setWindForce(glm::vec3(1.0 - sin(curr_time.getVal() * 1.0) * 0.1, 0.0f, (sin(curr_time.getVal())) / 200.0f ));
@@ -227,33 +227,42 @@ void keyCallback(int key, int action)
 
         // Load setup 1 for the cloth
         case SGCT_KEY_1:
-            if(action == SGCT_PRESS)
+            if(action == SGCT_PRESS) {
                 cloth->getShape()->setup1();
+                wind = false;
+            }
             break;
 
         // Load setup 2 for the cloth
         case SGCT_KEY_2:
-            if(action == SGCT_PRESS)
+            if(action == SGCT_PRESS) {
                 cloth->getShape()->setup2();
+                wind = false;
+            }
             break;
 
         // Load setup 3 for the cloth
         case SGCT_KEY_3:
-            if(action == SGCT_PRESS)
+            if(action == SGCT_PRESS) {
                 cloth->getShape()->setup3();
+                wind = false;
+            }
             break;
 
         // Load setup 4 for the cloth
         case SGCT_KEY_4:
-            if(action == SGCT_PRESS)
+            if(action == SGCT_PRESS) {
                 cloth->getShape()->setup4();
+                wind = false;
+            }
             break;
 
         // Load setup 5 for the cloth
         case SGCT_KEY_5:
-            if(action == SGCT_PRESS)
-                //cloth->getShape()->setup5();
-            //cloth->getShape()->setWindForce(glm::vec3(sin(curr_time.getVal()* 100.0f) * 1.0f, 0.0f, sin(curr_time.getVal()) * 0.1));
+            if(action == SGCT_PRESS) {
+                cloth->getShape()->setup5();
+                wind = true;
+            }
             break;
 
         // Play or pause the simulation

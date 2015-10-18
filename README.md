@@ -1,5 +1,5 @@
 # Cloth-simulation
-Simulation of cloth using a mass-spring model with basic normal mapping on the surface. The implementation is written in C++ and OpenGL. The simulation uses a Runge-Kutta 4 integrator and runs 20 simulations per frame.
+Simulation of cloth using a mass-spring model. The implementation is written in C++ and OpenGL. The simulation uses a Runge-Kutta 4 integrator and runs 15 simulations per frame.
 
 ## User controlls
 
@@ -15,14 +15,24 @@ Simulation of cloth using a mass-spring model with basic normal mapping on the s
 
 ``K`` Toggle draw mode (knot-point debugging or surface drawing)
 
+``N`` Release all static knots
+
 ``Arrow up`` Increase height of normalmap
 
 ``Arrow down`` Decrease height of normalmap
 
-``Mouse` Rotate scene
+``Mouse`` Rotate scene
+
+``Z`` Add wind force
 
 ## Compiling and running
 
 The included makefile only supports Mac OSX.
 
-Type ``make all && make run`` in terminal to compile and run the simulation
+``make all && make run`` in terminal to compile and run the simulation
+
+## Dependencies
+
+SGCT 2.1.3(https://github.com/alexceder/rigid-bodies)
+
+GLM (http://glm.g-truc.net/0.9.7/index.html)

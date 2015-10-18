@@ -68,6 +68,9 @@ void Mesh::createKnots() {
             index++;
         }
     }
+    /*for(unsigned int i = 0; i < knots.size(); i++) {
+        std::cout << "index: " << knots[i]->getIndex() << std::endl;
+    }*/
 }
 
 
@@ -544,11 +547,15 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
         updateVertexNormals();
         updateVertexNormalsList();
 
+        // Draw the front
         drawSurface(MVP, MV, MV_light, NM);
+        // Flip stuff
         flipNormals();
         flipMesh();
         flipUvs();
+        // Draw backside
         drawSurface(MVP, MV, MV_light, NM);
+        // Flip Uvs back
         flipUvs();
     }
 }
@@ -558,9 +565,6 @@ void Mesh::draw(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& N
  * Draws a polygon surface of the mesh
  */
 void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::mat3& NM) {
-
-    // Disable back face culling, since we want both sides of the cloth to be visible
-    //glDisable(GL_CULL_FACE);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sgct::TextureManager::instance()->getTextureByHandle(texHandle));
@@ -601,8 +605,6 @@ void Mesh::drawSurface(glm::mat4& MVP, glm::mat4& MV, glm::mat4& MV_light, glm::
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     sgct::ShaderManager::instance()->unBindShaderProgram();
-
-    //glEnable(GL_CULL_FACE);
 }
 
 
@@ -834,16 +836,11 @@ void Mesh::applyG(const glm::vec3 G, float dt) {
 
 void Mesh::resolveCollision(Knot *k) {
     // Add cloth self-collision if time is given
-
 }
 
 
 void Mesh::enforceMaximumStretch() {
     // Only allow springs to stretch or compress
-    // a certain amount, say 15 percent
-    for(std::vector<Knot*>::iterator it = knots.begin(); it != knots.end(); ++it) {
-        (*it)->enforceMaximumStretch();
-    }
 }
 
 

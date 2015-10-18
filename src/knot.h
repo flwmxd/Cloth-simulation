@@ -62,7 +62,9 @@ public:
     std::vector<Knot *> getAdjNeighbors() { return this->adjNeighbors;  }
     std::vector<Knot *> getDiagNeighbors() { return this->diagNeighbors;  }
     std::vector<Knot *> getFlexNeighbors() { return this->flexNeighbors;  }
+    float getCollisionRadius() { return this->collision_radius; };
     bool isStatic() { return _isStatic; }
+    bool isNeighbor(Knot *);
 
     // Setters
     void setIndex(unsigned int i) { this->index = i; };
@@ -91,6 +93,7 @@ private:
     float force_damping;
     glm::vec3 wind;
     bool _isStatic;
+    float collision_radius;
     std::vector<Knot *> adjNeighbors;
     std::vector<Knot *> diagNeighbors;
     std::vector<Knot *> flexNeighbors;
