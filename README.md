@@ -1,6 +1,8 @@
 # Cloth-simulation
 Simulation of cloth using a mass-spring model. The implementation is written in C++ and OpenGL. The simulation uses a Runge-Kutta 4 integrator and runs 15 simulations per frame.
 
+Demo: https://vimeo.com/141994566
+
 ## User controlls
 
 ``1`` Run setup 1
