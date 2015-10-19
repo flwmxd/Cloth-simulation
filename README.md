@@ -35,6 +35,6 @@ The included makefile only supports Mac OSX.
 
 ## Dependencies
 
-SGCT 2.1.3(https://github.com/alexceder/rigid-bodies)
+SGCT 2.1.3(https://c-student.itn.liu.se/wiki/develop:sgct:sgct)
 
 GLM (http://glm.g-truc.net/0.9.7/index.html)
